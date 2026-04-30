@@ -4,7 +4,7 @@
 
 body {
   margin: 0;
-  padding-bottom: 95px;
+  padding-bottom: 105px;
   font-family: Arial, Helvetica, sans-serif;
   color: #ffffff;
   background:
@@ -42,6 +42,16 @@ main {
   padding: 20px 6%;
 }
 
+.section-header h2 {
+  margin-bottom: 4px;
+}
+
+.section-header p {
+  margin-top: 0;
+  color: #c7c9d9;
+  font-size: 14px;
+}
+
 /* LIST */
 .song-grid {
   display: flex;
@@ -72,7 +82,7 @@ main {
     0 0 60px rgba(124,60,255,0.15);
 }
 
-/* 🔥 NOW PLAYING GLOW */
+/* NOW PLAYING GLOW */
 .song-card.active {
   border-color: rgba(0, 217, 255, 0.75);
   box-shadow:
@@ -174,19 +184,16 @@ footer {
   font-size: 12px;
 }
 
-/* ========================= */
-/* 🔥 MINI PLAYER (FIXED)   */
-/* ========================= */
-
+/* MINI PLAYER */
 #mini-player {
   position: fixed;
   left: 50%;
   bottom: 16px;
   transform: translateX(-50%);
-  width: min(92%, 720px);
-  height: 76px;
+  width: min(94%, 860px);
+  height: 82px;
   display: grid;
-  grid-template-columns: 54px 1fr 52px;
+  grid-template-columns: 54px 1fr 52px 150px;
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
@@ -211,12 +218,21 @@ footer {
   height: 54px;
   border-radius: 12px;
   object-fit: cover;
+  box-shadow: 0 0 15px rgba(0, 217, 255, 0.25);
+}
+
+.mini-info {
+  overflow: hidden;
+  min-width: 0;
 }
 
 #mini-title {
   margin: 0;
   font-size: 14px;
   font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #mini-artist {
@@ -227,18 +243,22 @@ footer {
 #mini-play-btn {
   width: 46px;
   height: 46px;
+  padding: 0;
   border-radius: 999px;
+  flex: unset;
   display: grid;
   place-items: center;
+  font-size: 16px;
 }
 
-/* PROGRESS BAR */
+/* MINI PROGRESS */
 #mini-progress {
   width: 100%;
   height: 4px;
   background: rgba(255,255,255,0.1);
   border-radius: 999px;
   margin-top: 6px;
+  cursor: pointer;
   overflow: hidden;
 }
 
@@ -246,10 +266,45 @@ footer {
   height: 100%;
   width: 0%;
   background: linear-gradient(90deg, #00d9ff, #7c3cff);
+  box-shadow: 0 0 10px rgba(0,217,255,0.5);
+}
+
+/* VOLUME */
+.volume-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.volume-icon {
+  font-size: 14px;
+}
+
+#volume-slider {
+  width: 110px;
+  accent-color: #00d9ff;
+  cursor: pointer;
 }
 
 /* MOBILE */
-@media (max-width: 500px) {
+@media (max-width: 600px) {
+  body {
+    padding-bottom: 120px;
+  }
+
+  .hero {
+    padding: 24px 5%;
+  }
+
+  h1 {
+    font-size: 36px;
+  }
+
+  main {
+    padding: 18px 5%;
+  }
+
   .song-card {
     grid-template-columns: 1fr;
   }
@@ -260,7 +315,43 @@ footer {
     aspect-ratio: 1 / 1;
   }
 
-  .mini-player {
+  .song-title {
+    font-size: 18px;
+  }
+
+  button {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .waveform {
+    height: 60px;
+  }
+
+  #mini-player {
     width: 94%;
+    height: 98px;
+    bottom: 12px;
+    grid-template-columns: 48px 1fr 48px;
+    grid-template-rows: auto auto;
+  }
+
+  #mini-cover {
+    width: 48px;
+    height: 48px;
+  }
+
+  #mini-play-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .volume-wrap {
+    grid-column: 2 / 4;
+    width: 100%;
+  }
+
+  #volume-slider {
+    width: 100%;
   }
 }
