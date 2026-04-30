@@ -23,11 +23,11 @@ const db = getFirestore(app);
 const songs = [
   {
     id: "song1",
-    title: "Stepbro Chill",
+    title: "My First Track",
     artist: "Kosmic Noize",
     file: "songs/song1.mp3",
     cover: "covers/cover1.jpg",
-    description: "What the hell is even that!"
+    description: "First official Kosmic Kloud test drop."
   },
   {
     id: "song2",
@@ -50,6 +50,8 @@ const miniCover = document.getElementById("mini-cover");
 const miniTitle = document.getElementById("mini-title");
 const miniArtist = document.getElementById("mini-artist");
 const miniPlayBtn = document.getElementById("mini-play-btn");
+const miniProgress = document.getElementById("mini-progress");
+const miniProgressBar = document.getElementById("mini-progress-bar");
 
 function formatTime(seconds) {
   if (!seconds || isNaN(seconds)) return "0:00";
@@ -134,6 +136,16 @@ function initWaveform(song) {
   wave.on("timeupdate", () => {
     document.getElementById(`current-${song.id}`).innerText =
       formatTime(wave.getCurrentTime());
+
+    if (currentSongId === song.id) {
+      const duration = wave.getDuration();
+      const currentTime = wave.getCurrentTime();
+
+      if (duration > 0) {
+        const progress = (currentTime / duration) * 100;
+        miniProgressBar.style.width = progress + "%";
+      }
+    }
   });
 
   wave.on("play", async () => {
@@ -161,6 +173,10 @@ function initWaveform(song) {
     document.getElementById(`play-btn-${song.id}`).innerText = "▶ Play";
     document.getElementById(`current-${song.id}`).innerText = "0:00";
     playCounted[song.id] = false;
+
+    if (currentSongId === song.id) {
+      miniProgressBar.style.width = "0%";
+    }
 
     const currentIndex = songs.findIndex((s) => s.id === song.id);
     const nextSong = songs[currentIndex + 1];
@@ -283,6 +299,15 @@ miniPlayBtn.addEventListener("click", () => {
   if (!currentSongId || !players[currentSongId]) return;
 
   players[currentSongId].playPause();
+});
+
+miniProgress.addEventListener("click", (e) => {
+  if (!currentSongId || !players[currentSongId]) return;
+
+  const rect = miniProgress.getBoundingClientRect();
+  const percent = (e.clientX - rect.left) / rect.width;
+
+  players[currentSongId].seekTo(percent);
 });
 
 renderSongs();
