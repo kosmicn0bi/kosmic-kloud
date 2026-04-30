@@ -190,12 +190,12 @@ footer {
   left: 50%;
   bottom: 16px;
   transform: translateX(-50%);
-  width: min(94%, 860px);
+  width: min(96%, 980px);
   height: 82px;
   display: grid;
-  grid-template-columns: 54px 1fr 52px 150px;
+  grid-template-columns: 54px 1fr 42px 52px 42px 150px;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 10px 12px;
   border-radius: 18px;
   background: rgba(10, 12, 28, 0.9);
@@ -240,15 +240,33 @@ footer {
   color: #8eeaff;
 }
 
-#mini-play-btn {
-  width: 46px;
-  height: 46px;
+#mini-play-btn,
+.mini-control-btn {
   padding: 0;
   border-radius: 999px;
   flex: unset;
   display: grid;
   place-items: center;
+}
+
+#mini-play-btn {
+  width: 46px;
+  height: 46px;
   font-size: 16px;
+}
+
+.mini-control-btn {
+  width: 38px;
+  height: 38px;
+  font-size: 14px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  box-shadow: none;
+}
+
+.mini-control-btn.active {
+  background: linear-gradient(135deg, #7c3cff, #00d9ff);
+  box-shadow: 0 0 16px rgba(0,217,255,0.4);
 }
 
 /* MINI PROGRESS */
@@ -288,9 +306,9 @@ footer {
 }
 
 /* MOBILE */
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   body {
-    padding-bottom: 120px;
+    padding-bottom: 140px;
   }
 
   .hero {
@@ -330,9 +348,9 @@ footer {
 
   #mini-player {
     width: 94%;
-    height: 98px;
+    height: 120px;
     bottom: 12px;
-    grid-template-columns: 48px 1fr 48px;
+    grid-template-columns: 48px 1fr 38px 42px 38px;
     grid-template-rows: auto auto;
   }
 
@@ -346,8 +364,13 @@ footer {
     height: 42px;
   }
 
+  .mini-control-btn {
+    width: 34px;
+    height: 34px;
+  }
+
   .volume-wrap {
-    grid-column: 2 / 4;
+    grid-column: 2 / 6;
     width: 100%;
   }
 
