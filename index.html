@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kosmic Kloud</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>☁️ Kosmic Kloud</h1>
+
+  <div class="song">
+    <h2>My First Track</h2>
+
+    <audio id="audio1" controls>
+      <source src="song.wav" type="audio/wav">
+      Your browser does not support the audio element.
+    </audio>
+
+    <div class="controls">
+      <button onclick="likeSong()">❤️ Like</button>
+      <button onclick="shareSong()">🔁 Share</button>
+    </div>
+
+    <p id="plays-song1">Plays: 0</p>
+    <p id="likes-song1">Likes: 0</p>
+  </div>
+
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>
