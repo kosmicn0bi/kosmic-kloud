@@ -33,7 +33,7 @@ const songs = [
     id: "song2",
     title: "ARC",
     artist: "Kosmic Noize",
-    file: "songs/Arc.mp3",
+    file: "songs/ARC.mp3",
     cover: "covers/Arcart.JPG",
     description: "Hey — Dont Shoot!"
   }
