@@ -29,23 +29,20 @@ const songs = [
     cover: "covers/cover1.jpg",
     description: "First official Kosmic Kloud test drop."
   }
-
-  /*
-  ,
-  {
-    id: "song2",
-    title: "Track Name",
-    artist: "Friend Name",
-    file: "songs/song2.mp3",
-    cover: "covers/cover2.jpg",
-    description: "Optional description here."
-  }
-  */
 ];
 
 const songList = document.getElementById("song-list");
 const players = {};
 const playCounted = {};
+
+function formatTime(seconds) {
+  if (!seconds || isNaN(seconds)) return "0:00";
+
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
+
+  return `${mins}:${secs}`;
+}
 
 function renderSongs() {
   songList.innerHTML = "";
@@ -63,6 +60,11 @@ function renderSongs() {
         <p class="description">${song.description || ""}</p>
 
         <div id="waveform-${song.id}" class="waveform"></div>
+
+        <div class="time-row">
+          <span id="current-${song.id}">0:00</span>
+          <span id="duration-${song.id}">0:00</span>
+        </div>
 
         <div class="stats">
           <span id="plays-${song.id}">Plays: 0</span>
@@ -99,6 +101,21 @@ function initWaveform(song) {
 
   wave.load(song.file);
 
+  wave.on("ready", () => {
+    const duration = wave.getDuration();
+    document.getElementById(`duration-${song.id}`).innerText = formatTime(duration);
+  });
+
+  wave.on("audioprocess", () => {
+    const currentTime = wave.getCurrentTime();
+    document.getElementById(`current-${song.id}`).innerText = formatTime(currentTime);
+  });
+
+  wave.on("seek", () => {
+    const currentTime = wave.getCurrentTime();
+    document.getElementById(`current-${song.id}`).innerText = formatTime(currentTime);
+  });
+
   wave.on("play", async () => {
     document.getElementById(`play-btn-${song.id}`).innerText = "⏸ Pause";
 
@@ -115,6 +132,7 @@ function initWaveform(song) {
 
   wave.on("finish", () => {
     document.getElementById(`play-btn-${song.id}`).innerText = "▶ Play";
+    document.getElementById(`current-${song.id}`).innerText = "0:00";
     playCounted[song.id] = false;
   });
 
