@@ -12,6 +12,7 @@ body {
     #070812;
 }
 
+/* HERO */
 .hero {
   min-height: 230px;
   display: flex;
@@ -42,6 +43,7 @@ h1 {
   line-height: 1.5;
 }
 
+/* MAIN */
 main {
   padding: 30px 8%;
 }
@@ -61,6 +63,7 @@ main {
   font-size: 14px;
 }
 
+/* SONG LIST */
 .song-grid {
   display: flex;
   flex-direction: column;
@@ -69,6 +72,7 @@ main {
   margin: 0 auto;
 }
 
+/* CARD */
 .song-card {
   display: grid;
   grid-template-columns: 150px 1fr;
@@ -79,8 +83,14 @@ main {
   padding: 14px;
   box-shadow: 0 15px 40px rgba(0,0,0,0.3);
   backdrop-filter: blur(12px);
+  transition: transform 0.2s ease;
 }
 
+.song-card:hover {
+  transform: translateY(-4px);
+}
+
+/* COVER */
 .cover {
   width: 150px;
   height: 150px;
@@ -89,6 +99,7 @@ main {
   background: #111;
 }
 
+/* CONTENT */
 .song-content {
   padding: 2px 0;
 }
@@ -112,11 +123,22 @@ main {
   margin-bottom: 12px;
 }
 
+/* WAVEFORM */
 .waveform {
   width: 100%;
   margin: 12px 0;
 }
 
+/* ⏱ TIME DISPLAY */
+.time-row {
+  display: flex;
+  justify-content: space-between;
+  color: #aeb2c8;
+  font-size: 12px;
+  margin: -4px 0 10px;
+}
+
+/* STATS */
 .stats {
   display: flex;
   gap: 12px;
@@ -125,6 +147,7 @@ main {
   margin-bottom: 12px;
 }
 
+/* BUTTONS */
 .buttons {
   display: flex;
   gap: 8px;
@@ -139,12 +162,15 @@ button {
   font-weight: bold;
   font-size: 12px;
   background: linear-gradient(135deg, #7c3cff, #00d9ff);
+  transition: 0.2s;
 }
 
 button:hover {
   opacity: 0.9;
+  transform: scale(1.03);
 }
 
+/* FOOTER */
 footer {
   text-align: center;
   padding: 25px;
@@ -152,6 +178,7 @@ footer {
   font-size: 13px;
 }
 
+/* 📱 MOBILE */
 @media (max-width: 650px) {
   .song-card {
     grid-template-columns: 1fr;
