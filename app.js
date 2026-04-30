@@ -31,11 +31,11 @@ const songs = [
   },
   {
     id: "song2",
-    title: "Arc",
+    title: "ARC,
     artist: "Kosmic Noize",
     file: "songs/Arc.mp3",
     cover: "covers/Arcart.JPG",
-    description: "Arc — second drop."
+    description: "Hey — Dont Shoot!"
   }
 ];
 
