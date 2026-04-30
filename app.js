@@ -44,6 +44,7 @@ const players = {};
 const playCounted = {};
 
 let currentSongId = null;
+let currentVolume = 1;
 
 const miniPlayer = document.getElementById("mini-player");
 const miniCover = document.getElementById("mini-cover");
@@ -52,6 +53,7 @@ const miniArtist = document.getElementById("mini-artist");
 const miniPlayBtn = document.getElementById("mini-play-btn");
 const miniProgress = document.getElementById("mini-progress");
 const miniProgressBar = document.getElementById("mini-progress-bar");
+const volumeSlider = document.getElementById("volume-slider");
 
 function formatTime(seconds) {
   if (!seconds || isNaN(seconds)) return "0:00";
@@ -66,16 +68,12 @@ function setActiveCard(songId) {
   });
 
   const activeCard = document.getElementById(`card-${songId}`);
-  if (activeCard) {
-    activeCard.classList.add("active");
-  }
+  if (activeCard) activeCard.classList.add("active");
 }
 
 function clearActiveCard(songId) {
   const card = document.getElementById(`card-${songId}`);
-  if (card) {
-    card.classList.remove("active");
-  }
+  if (card) card.classList.remove("active");
 }
 
 function updateMiniPlayer(song, isPlaying = true) {
@@ -86,6 +84,12 @@ function updateMiniPlayer(song, isPlaying = true) {
   miniTitle.innerText = song.title;
   miniArtist.innerText = song.artist;
   miniPlayBtn.innerText = isPlaying ? "⏸" : "▶";
+}
+
+function applyVolumeToAllPlayers() {
+  Object.keys(players).forEach((id) => {
+    players[id].setVolume(currentVolume);
+  });
 }
 
 function renderSongs() {
@@ -146,6 +150,8 @@ function initWaveform(song) {
     barGap: 2,
     barRadius: 2
   });
+
+  wave.setVolume(currentVolume);
 
   wave.on("ready", () => {
     document.getElementById(`duration-${song.id}`).innerText =
@@ -332,6 +338,11 @@ miniProgress.addEventListener("click", (e) => {
   const percent = (e.clientX - rect.left) / rect.width;
 
   players[currentSongId].seekTo(percent);
+});
+
+volumeSlider.addEventListener("input", () => {
+  currentVolume = Number(volumeSlider.value) / 100;
+  applyVolumeToAllPlayers();
 });
 
 renderSongs();
