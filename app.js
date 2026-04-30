@@ -8,7 +8,6 @@ import {
   increment
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-// 🔥 Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCHfRvoY_hQfGWvDDsmSwtJ91wDbVuMdGk",
   authDomain: "kosmic-kloud.firebaseapp.com",
@@ -21,7 +20,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🎧 SONG LIST (ADD MORE HERE)
 const songs = [
   {
     id: "song1",
@@ -32,7 +30,6 @@ const songs = [
     description: "First official Kosmic Kloud test drop."
   }
 
-  // 👉 Add more songs like this:
   /*
   ,
   {
@@ -41,32 +38,31 @@ const songs = [
     artist: "Friend Name",
     file: "songs/song2.mp3",
     cover: "covers/cover2.jpg",
-    description: "Optional description"
+    description: "Optional description here."
   }
   */
 ];
 
 const songList = document.getElementById("song-list");
+const players = {};
+const playCounted = {};
 
-// 🎨 RENDER SONG CARDS
 function renderSongs() {
   songList.innerHTML = "";
 
   songs.forEach((song) => {
-    const card = document.createElement("div");
+    const card = document.createElement("article");
     card.className = "song-card";
 
     card.innerHTML = `
-      <img class="cover" src="${song.cover}" />
+      <img class="cover" src="${song.cover}" alt="${song.title} cover art">
 
       <div class="song-content">
         <h3 class="song-title">${song.title}</h3>
         <p class="artist">${song.artist}</p>
         <p class="description">${song.description || ""}</p>
 
-        <audio id="audio-${song.id}" controls>
-          <source src="${song.file}?v=1" type="audio/mpeg">
-        </audio>
+        <div id="waveform-${song.id}" class="waveform"></div>
 
         <div class="stats">
           <span id="plays-${song.id}">Plays: 0</span>
@@ -75,6 +71,7 @@ function renderSongs() {
         </div>
 
         <div class="buttons">
+          <button id="play-btn-${song.id}" onclick="playSong('${song.id}')">▶ Play</button>
           <button onclick="likeSong('${song.id}')">❤️ Like</button>
           <button onclick="shareSong('${song.id}', '${song.title}', '${song.artist}')">🔁 Share</button>
         </div>
@@ -82,81 +79,115 @@ function renderSongs() {
     `;
 
     songList.appendChild(card);
-
-    const audio = document.getElementById(`audio-${song.id}`);
-
-    audio.addEventListener("play", async () => {
-      await increaseStat(song.id, "plays");
-      await loadStats(song.id);
-    });
-
+    initWaveform(song);
     loadStats(song.id);
   });
 }
 
-// 📦 ENSURE FIRESTORE DOC EXISTS
+function initWaveform(song) {
+  const wave = WaveSurfer.create({
+    container: `#waveform-${song.id}`,
+    waveColor: "#8a8fa8",
+    progressColor: "#00d9ff",
+    cursorColor: "#ffffff",
+    height: 70,
+    barWidth: 2,
+    barGap: 2,
+    barRadius: 2,
+    responsive: true
+  });
+
+  wave.load(song.file);
+
+  wave.on("play", async () => {
+    document.getElementById(`play-btn-${song.id}`).innerText = "⏸ Pause";
+
+    if (!playCounted[song.id]) {
+      playCounted[song.id] = true;
+      await increaseStat(song.id, "plays");
+      await loadStats(song.id);
+    }
+  });
+
+  wave.on("pause", () => {
+    document.getElementById(`play-btn-${song.id}`).innerText = "▶ Play";
+  });
+
+  wave.on("finish", () => {
+    document.getElementById(`play-btn-${song.id}`).innerText = "▶ Play";
+    playCounted[song.id] = false;
+  });
+
+  players[song.id] = wave;
+}
+
 async function ensureSongDoc(songId) {
-  const ref = doc(db, "songs", songId);
-  const snap = await getDoc(ref);
+  const songRef = doc(db, "songs", songId);
+  const snap = await getDoc(songRef);
 
   if (!snap.exists()) {
-    await setDoc(ref, {
+    await setDoc(songRef, {
       plays: 0,
       likes: 0,
       shares: 0
     });
   }
 
-  return ref;
+  return songRef;
 }
 
-// 📊 INCREASE STAT
 async function increaseStat(songId, field) {
-  const ref = await ensureSongDoc(songId);
+  const songRef = await ensureSongDoc(songId);
 
-  await updateDoc(ref, {
+  await updateDoc(songRef, {
     [field]: increment(1)
   });
 }
 
-// 📊 LOAD STATS
 async function loadStats(songId) {
-  const ref = await ensureSongDoc(songId);
-  const snap = await getDoc(ref);
+  const songRef = await ensureSongDoc(songId);
+  const snap = await getDoc(songRef);
   const data = snap.data();
 
-  document.getElementById(`plays-${songId}`).innerText =
-    `Plays: ${data.plays || 0}`;
-
-  document.getElementById(`likes-${songId}`).innerText =
-    `Likes: ${data.likes || 0}`;
-
-  document.getElementById(`shares-${songId}`).innerText =
-    `Shares: ${data.shares || 0}`;
+  document.getElementById(`plays-${songId}`).innerText = `Plays: ${data.plays || 0}`;
+  document.getElementById(`likes-${songId}`).innerText = `Likes: ${data.likes || 0}`;
+  document.getElementById(`shares-${songId}`).innerText = `Shares: ${data.shares || 0}`;
 }
 
-// ❤️ LIKE BUTTON
-window.likeSong = async (songId) => {
-  const key = `liked_${songId}`;
+window.playSong = (songId) => {
+  Object.keys(players).forEach((id) => {
+    if (id !== songId) {
+      players[id].pause();
+      document.getElementById(`play-btn-${id}`).innerText = "▶ Play";
+    }
+  });
 
-  if (localStorage.getItem(key)) {
-    alert("You already liked this track");
+  players[songId].playPause();
+};
+
+window.likeSong = async (songId) => {
+  const likedKey = `liked_${songId}`;
+
+  if (localStorage.getItem(likedKey)) {
+    alert("You already liked this track on this device.");
     return;
   }
 
   await increaseStat(songId, "likes");
-  localStorage.setItem(key, "true");
+  localStorage.setItem(likedKey, "true");
   await loadStats(songId);
 };
 
-// 🔁 SHARE BUTTON
 window.shareSong = async (songId, title, artist) => {
+  const shareData = {
+    title: `${title} by ${artist} on Kosmic Kloud`,
+    text: `Listen to ${title} by ${artist} on Kosmic Kloud`,
+    url: window.location.href
+  };
+
   try {
     if (navigator.share) {
-      await navigator.share({
-        title: `${title} - ${artist}`,
-        url: window.location.href
-      });
+      await navigator.share(shareData);
     } else {
       await navigator.clipboard.writeText(window.location.href);
       alert("Link copied!");
@@ -164,10 +195,9 @@ window.shareSong = async (songId, title, artist) => {
 
     await increaseStat(songId, "shares");
     await loadStats(songId);
-  } catch (err) {
-    console.log("Share cancelled");
+  } catch (error) {
+    console.log("Share cancelled or failed:", error);
   }
 };
 
-// 🚀 INIT
 renderSongs();
