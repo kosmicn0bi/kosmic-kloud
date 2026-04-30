@@ -37,10 +37,8 @@ const playCounted = {};
 
 function formatTime(seconds) {
   if (!seconds || isNaN(seconds)) return "0:00";
-
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
-
   return `${mins}:${secs}`;
 }
 
@@ -59,6 +57,7 @@ function renderSongs() {
         <p class="artist">${song.artist}</p>
         <p class="description">${song.description || ""}</p>
 
+        <audio id="media-${song.id}" src="${song.file}" preload="metadata"></audio>
         <div id="waveform-${song.id}" class="waveform"></div>
 
         <div class="time-row">
@@ -87,37 +86,34 @@ function renderSongs() {
 }
 
 function initWaveform(song) {
+  const audioElement = document.getElementById(`media-${song.id}`);
+
   const wave = WaveSurfer.create({
     container: `#waveform-${song.id}`,
+    media: audioElement,
     waveColor: "#8a8fa8",
     progressColor: "#00d9ff",
     cursorColor: "#ffffff",
-    height: 70,
+    height: 60,
     barWidth: 2,
     barGap: 2,
-    barRadius: 2,
-    responsive: true
+    barRadius: 2
   });
-
-  wave.load(song.file);
 
   wave.on("ready", () => {
-    const duration = wave.getDuration();
-    document.getElementById(`duration-${song.id}`).innerText = formatTime(duration);
+    document.getElementById(`duration-${song.id}`).innerText =
+      formatTime(wave.getDuration());
   });
 
-  wave.on("audioprocess", () => {
-    const currentTime = wave.getCurrentTime();
-    document.getElementById(`current-${song.id}`).innerText = formatTime(currentTime);
-  });
-
-  wave.on("seek", () => {
-    const currentTime = wave.getCurrentTime();
-    document.getElementById(`current-${song.id}`).innerText = formatTime(currentTime);
+  wave.on("timeupdate", () => {
+    document.getElementById(`current-${song.id}`).innerText =
+      formatTime(wave.getCurrentTime());
   });
 
   wave.on("play", async () => {
     document.getElementById(`play-btn-${song.id}`).innerText = "⏸ Pause";
+
+    setupMediaSession(song);
 
     if (!playCounted[song.id]) {
       playCounted[song.id] = true;
@@ -139,6 +135,22 @@ function initWaveform(song) {
   players[song.id] = wave;
 }
 
+function setupMediaSession(song) {
+  if (!("mediaSession" in navigator)) return;
+
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: song.title,
+    artist: song.artist,
+    album: "Kosmic Kloud",
+    artwork: [
+      { src: song.cover, sizes: "512x512", type: "image/jpeg" }
+    ]
+  });
+
+  navigator.mediaSession.setActionHandler("play", () => players[song.id].play());
+  navigator.mediaSession.setActionHandler("pause", () => players[song.id].pause());
+}
+
 async function ensureSongDoc(songId) {
   const songRef = doc(db, "songs", songId);
   const snap = await getDoc(songRef);
@@ -156,7 +168,6 @@ async function ensureSongDoc(songId) {
 
 async function increaseStat(songId, field) {
   const songRef = await ensureSongDoc(songId);
-
   await updateDoc(songRef, {
     [field]: increment(1)
   });
