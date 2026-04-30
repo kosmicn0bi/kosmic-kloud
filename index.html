@@ -30,15 +30,20 @@
   </footer>
 
   <div id="mini-player" class="mini-player hidden">
-    <img id="mini-cover" src="" alt="Now playing cover" />
+  <img id="mini-cover" src="" alt="Now playing cover" />
 
-    <div class="mini-info">
-      <p id="mini-title">Not playing</p>
-      <span id="mini-artist">Kosmic Noize</span>
+  <div class="mini-info">
+    <p id="mini-title">Not playing</p>
+    <span id="mini-artist">Kosmic Noize</span>
+
+    <!-- 🔥 NEW PROGRESS BAR -->
+    <div class="mini-progress" id="mini-progress">
+      <div class="mini-progress-bar" id="mini-progress-bar"></div>
     </div>
-
-    <button id="mini-play-btn" class="mini-play-btn">▶</button>
   </div>
+
+  <button id="mini-play-btn" class="mini-play-btn">▶</button>
+</div>
 
   <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
   <script type="module" src="app.js"></script>
