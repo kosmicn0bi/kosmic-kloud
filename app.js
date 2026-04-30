@@ -31,10 +31,10 @@ const songs = [
   },
   {
     id: "song2",
-    title: "ARC",
+    title: "Arc",
     artist: "Kosmic Noize",
-    file: "songs/ARC.mp3",
-    cover: "covers/Arcart.JPG",
+    file: "songs/Arc.mp3",
+    cover: "covers/Arcart.jpg",
     description: "Arc — second drop."
   }
 ];
@@ -138,6 +138,15 @@ function initWaveform(song) {
     document.getElementById(`play-btn-${song.id}`).innerText = "▶ Play";
     document.getElementById(`current-${song.id}`).innerText = "0:00";
     playCounted[song.id] = false;
+
+    const currentIndex = songs.findIndex((s) => s.id === song.id);
+    const nextSong = songs[currentIndex + 1];
+
+    if (nextSong && players[nextSong.id]) {
+      setTimeout(() => {
+        playSong(nextSong.id);
+      }, 500);
+    }
   });
 
   players[song.id] = wave;
@@ -176,6 +185,7 @@ async function ensureSongDoc(songId) {
 
 async function increaseStat(songId, field) {
   const songRef = await ensureSongDoc(songId);
+
   await updateDoc(songRef, {
     [field]: increment(1)
   });
