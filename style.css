@@ -49,7 +49,7 @@ body::after {
   50% { transform: translate(-40px, 35px); }
 }
 
-/* HERO (CENTERED) */
+/* HERO */
 .hero {
   padding: 40px 6%;
   border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -96,7 +96,7 @@ main {
   font-size: 14px;
 }
 
-/* LIST */
+/* SONG LIST */
 .song-grid {
   display: flex;
   flex-direction: column;
@@ -152,38 +152,17 @@ main {
 .artist {
   font-size: 12px;
   color: #8eeaff;
-  margin: 0;
 }
 
 .description {
   font-size: 12px;
   margin-bottom: 8px;
-  color: #d7d8e6;
 }
 
 /* WAVEFORM */
 .waveform {
   height: 50px;
   margin: 10px 0;
-  border-radius: 10px;
-  background: rgba(0,217,255,0.04);
-}
-
-/* TIME */
-.time-row {
-  font-size: 11px;
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-/* STATS */
-.stats {
-  font-size: 11px;
-  display: flex;
-  gap: 10px;
-  margin-bottom: 8px;
-  color: #c7c9d9;
 }
 
 /* BUTTONS */
@@ -195,12 +174,10 @@ main {
 button {
   flex: 1;
   padding: 10px;
-  font-size: 13px;
   border-radius: 999px;
   border: none;
   background: linear-gradient(135deg, #7c3cff, #00d9ff);
   color: white;
-  cursor: pointer;
 }
 
 /* MINI PLAYER */
@@ -224,8 +201,23 @@ button {
   display: none;
 }
 
+/* VOLUME */
+.volume-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#volume-slider {
+  width: 110px;
+}
+
 /* MOBILE */
 @media (max-width: 700px) {
+  body {
+    padding-bottom: 140px;
+  }
+
   .song-card {
     grid-template-columns: 1fr;
   }
@@ -244,10 +236,12 @@ button {
   }
 }
 
-/* FOOTER (CENTERED) */
+/* FOOTER (FIXED + CENTERED) */
 footer {
-  padding: 20px 6%;
+  padding: 25px 6% 120px;
   color: #8a8fa8;
   font-size: 12px;
   text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  margin-top: 40px;
 }
