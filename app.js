@@ -28,6 +28,14 @@ const songs = [
     file: "songs/song1.mp3",
     cover: "covers/cover1.jpg",
     description: "First official Kosmic Kloud test drop."
+  },
+  {
+    id: "song2",
+    title: "Arc",
+    artist: "Kosmic Noize",
+    file: "songs/Arc.mp3",
+    cover: "covers/Arcart.jpg",
+    description: "Arc — second drop."
   }
 ];
 
