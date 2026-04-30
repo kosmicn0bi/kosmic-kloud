@@ -43,11 +43,29 @@ const songList = document.getElementById("song-list");
 const players = {};
 const playCounted = {};
 
+let currentSongId = null;
+
+const miniPlayer = document.getElementById("mini-player");
+const miniCover = document.getElementById("mini-cover");
+const miniTitle = document.getElementById("mini-title");
+const miniArtist = document.getElementById("mini-artist");
+const miniPlayBtn = document.getElementById("mini-play-btn");
+
 function formatTime(seconds) {
   if (!seconds || isNaN(seconds)) return "0:00";
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
   return `${mins}:${secs}`;
+}
+
+function updateMiniPlayer(song, isPlaying = true) {
+  currentSongId = song.id;
+
+  miniPlayer.classList.remove("hidden");
+  miniCover.src = song.cover;
+  miniTitle.innerText = song.title;
+  miniArtist.innerText = song.artist;
+  miniPlayBtn.innerText = isPlaying ? "⏸" : "▶";
 }
 
 function renderSongs() {
@@ -122,6 +140,7 @@ function initWaveform(song) {
     document.getElementById(`play-btn-${song.id}`).innerText = "⏸ Pause";
 
     setupMediaSession(song);
+    updateMiniPlayer(song, true);
 
     if (!playCounted[song.id]) {
       playCounted[song.id] = true;
@@ -132,9 +151,12 @@ function initWaveform(song) {
 
   wave.on("pause", () => {
     document.getElementById(`play-btn-${song.id}`).innerText = "▶ Play";
+
+    if (currentSongId === song.id) {
+      updateMiniPlayer(song, false);
+    }
   });
 
-  // 🔥 FIXED AUTOPLAY
   wave.on("finish", () => {
     document.getElementById(`play-btn-${song.id}`).innerText = "▶ Play";
     document.getElementById(`current-${song.id}`).innerText = "0:00";
@@ -145,7 +167,6 @@ function initWaveform(song) {
 
     if (nextSong && players[nextSong.id]) {
       setTimeout(() => {
-        // stop all other tracks
         Object.keys(players).forEach((id) => {
           if (id !== nextSong.id) {
             players[id].pause();
@@ -153,9 +174,10 @@ function initWaveform(song) {
           }
         });
 
-        // play next track directly (NO toggle)
         players[nextSong.id].play();
       }, 500);
+    } else {
+      updateMiniPlayer(song, false);
     }
   });
 
@@ -256,5 +278,11 @@ window.shareSong = async (songId, title, artist) => {
     console.log("Share cancelled or failed:", error);
   }
 };
+
+miniPlayBtn.addEventListener("click", () => {
+  if (!currentSongId || !players[currentSongId]) return;
+
+  players[currentSongId].playPause();
+});
 
 renderSongs();
