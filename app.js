@@ -45,6 +45,8 @@ const playCounted = {};
 
 let currentSongId = null;
 let currentVolume = 1;
+let shuffleEnabled = false;
+let loopEnabled = false;
 
 const miniPlayer = document.getElementById("mini-player");
 const miniCover = document.getElementById("mini-cover");
@@ -54,6 +56,8 @@ const miniPlayBtn = document.getElementById("mini-play-btn");
 const miniProgress = document.getElementById("mini-progress");
 const miniProgressBar = document.getElementById("mini-progress-bar");
 const volumeSlider = document.getElementById("volume-slider");
+const shuffleBtn = document.getElementById("shuffle-btn");
+const loopBtn = document.getElementById("loop-btn");
 
 function formatTime(seconds) {
   if (!seconds || isNaN(seconds)) return "0:00";
@@ -90,6 +94,40 @@ function applyVolumeToAllPlayers() {
   Object.keys(players).forEach((id) => {
     players[id].setVolume(currentVolume);
   });
+}
+
+function getNextSong(currentId) {
+  const currentIndex = songs.findIndex((s) => s.id === currentId);
+
+  if (shuffleEnabled && songs.length > 1) {
+    let randomIndex;
+
+    do {
+      randomIndex = Math.floor(Math.random() * songs.length);
+    } while (songs[randomIndex].id === currentId);
+
+    return songs[randomIndex];
+  }
+
+  const nextSong = songs[currentIndex + 1];
+
+  if (nextSong) return nextSong;
+
+  if (loopEnabled) return songs[0];
+
+  return null;
+}
+
+function playSpecificSong(songId) {
+  Object.keys(players).forEach((id) => {
+    if (id !== songId) {
+      players[id].pause();
+      document.getElementById(`play-btn-${id}`).innerText = "▶ Play";
+      clearActiveCard(id);
+    }
+  });
+
+  players[songId].play();
 }
 
 function renderSongs() {
@@ -206,20 +244,11 @@ function initWaveform(song) {
       miniProgressBar.style.width = "0%";
     }
 
-    const currentIndex = songs.findIndex((s) => s.id === song.id);
-    const nextSong = songs[currentIndex + 1];
+    const nextSong = getNextSong(song.id);
 
     if (nextSong && players[nextSong.id]) {
       setTimeout(() => {
-        Object.keys(players).forEach((id) => {
-          if (id !== nextSong.id) {
-            players[id].pause();
-            document.getElementById(`play-btn-${id}`).innerText = "▶ Play";
-            clearActiveCard(id);
-          }
-        });
-
-        players[nextSong.id].play();
+        playSpecificSong(nextSong.id);
       }, 500);
     } else {
       updateMiniPlayer(song, false);
@@ -343,6 +372,16 @@ miniProgress.addEventListener("click", (e) => {
 volumeSlider.addEventListener("input", () => {
   currentVolume = Number(volumeSlider.value) / 100;
   applyVolumeToAllPlayers();
+});
+
+shuffleBtn.addEventListener("click", () => {
+  shuffleEnabled = !shuffleEnabled;
+  shuffleBtn.classList.toggle("active", shuffleEnabled);
+});
+
+loopBtn.addEventListener("click", () => {
+  loopEnabled = !loopEnabled;
+  loopBtn.classList.toggle("active", loopEnabled);
 });
 
 renderSongs();
