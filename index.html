@@ -1,32 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kosmic Kloud</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <h1>☁️ Kosmic Kloud</h1>
-
-  <div class="song">
-    <h2>My First Track</h2>
-
-    <audio id="audio1" controls>
-      <source src="./song.mp3?v=2" type="audio/mpeg">
-      Your browser does not support the audio element.
-    </audio>
-
-    <div class="controls">
-      <button onclick="likeSong()">❤️ Like</button>
-      <button onclick="shareSong()">🔁 Share</button>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Independent sounds • bootlegs • underground drops</p>
+      <h1>Kosmic Kloud</h1>
+      <p class="tagline">A private cloud for tracks, remixes, edits, and sounds from the crew.</p>
     </div>
+  </header>
 
-    <p id="plays-song1">Plays: 0</p>
-    <p id="likes-song1">Likes: 0</p>
-  </div>
+  <main>
+    <section class="section-header">
+      <h2>Latest Drops</h2>
+      <p>Stream, like, and share tracks from Kosmic Kloud.</p>
+    </section>
+
+    <section id="song-list" class="song-grid"></section>
+  </main>
+
+  <footer>
+    <p>© Kosmic Kloud — independent music platform</p>
+  </footer>
 
   <script type="module" src="app.js"></script>
-
 </body>
 </html>
