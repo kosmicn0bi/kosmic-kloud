@@ -4,6 +4,7 @@
 
 body {
   margin: 0;
+  padding-bottom: 95px;
   font-family: Arial, Helvetica, sans-serif;
   color: #ffffff;
   background:
@@ -29,9 +30,26 @@ h1 {
   color: #c7c9d9;
 }
 
+.eyebrow {
+  font-size: 12px;
+  color: #8eeaff;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 /* MAIN */
 main {
   padding: 20px 6%;
+}
+
+.section-header h2 {
+  margin-bottom: 4px;
+}
+
+.section-header p {
+  margin-top: 0;
+  color: #c7c9d9;
+  font-size: 14px;
 }
 
 /* LIST */
@@ -76,16 +94,19 @@ main {
 /* TEXT */
 .song-title {
   font-size: 16px;
+  margin: 0 0 4px;
 }
 
 .artist {
   font-size: 12px;
   color: #8eeaff;
+  margin: 0;
 }
 
 .description {
   font-size: 12px;
   margin-bottom: 8px;
+  color: #d7d8e6;
 }
 
 /* WAVEFORM */
@@ -113,6 +134,7 @@ main {
   display: flex;
   gap: 10px;
   margin-bottom: 8px;
+  color: #c7c9d9;
 }
 
 /* BUTTONS */
@@ -131,6 +153,7 @@ button {
   color: white;
   box-shadow: 0 0 15px rgba(0,217,255,0.25);
   transition: 0.2s;
+  cursor: pointer;
 }
 
 button:hover {
@@ -138,8 +161,89 @@ button:hover {
   box-shadow: 0 0 25px rgba(0,217,255,0.4);
 }
 
+/* FOOTER */
+footer {
+  padding: 20px 6%;
+  color: #8a8fa8;
+  font-size: 12px;
+}
+
+/* STICKY MINI PLAYER */
+.mini-player {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: min(92%, 720px);
+  display: grid;
+  grid-template-columns: 54px 1fr 52px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(10, 12, 28, 0.88);
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.45),
+    0 0 25px rgba(0, 217, 255, 0.2),
+    0 0 60px rgba(124, 60, 255, 0.16);
+  z-index: 999;
+}
+
+.mini-player.hidden {
+  display: none;
+}
+
+.mini-player img {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 0 15px rgba(0, 217, 255, 0.25);
+}
+
+.mini-info {
+  overflow: hidden;
+}
+
+.mini-info p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-info span {
+  font-size: 12px;
+  color: #8eeaff;
+}
+
+.mini-play-btn {
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  flex: unset;
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+}
+
 /* 📱 MOBILE */
 @media (max-width: 500px) {
+  .hero {
+    padding: 24px 5%;
+  }
+
+  h1 {
+    font-size: 36px;
+  }
+
+  main {
+    padding: 18px 5%;
+  }
 
   .song-card {
     grid-template-columns: 1fr;
@@ -162,5 +266,21 @@ button:hover {
 
   .waveform {
     height: 60px;
+  }
+
+  .mini-player {
+    bottom: 12px;
+    width: 94%;
+    grid-template-columns: 48px 1fr 48px;
+  }
+
+  .mini-player img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .mini-play-btn {
+    width: 42px;
+    height: 42px;
   }
 }
