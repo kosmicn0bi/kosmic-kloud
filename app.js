@@ -134,6 +134,7 @@ function initWaveform(song) {
     document.getElementById(`play-btn-${song.id}`).innerText = "▶ Play";
   });
 
+  // 🔥 FIXED AUTOPLAY
   wave.on("finish", () => {
     document.getElementById(`play-btn-${song.id}`).innerText = "▶ Play";
     document.getElementById(`current-${song.id}`).innerText = "0:00";
@@ -144,7 +145,16 @@ function initWaveform(song) {
 
     if (nextSong && players[nextSong.id]) {
       setTimeout(() => {
-        playSong(nextSong.id);
+        // stop all other tracks
+        Object.keys(players).forEach((id) => {
+          if (id !== nextSong.id) {
+            players[id].pause();
+            document.getElementById(`play-btn-${id}`).innerText = "▶ Play";
+          }
+        });
+
+        // play next track directly (NO toggle)
+        players[nextSong.id].play();
       }, 500);
     }
   });
