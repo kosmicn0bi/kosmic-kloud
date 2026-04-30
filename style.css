@@ -231,11 +231,6 @@ footer {
   place-items: center;
 }
 
-/* 📱 MOBILE */
-@media (max-width: 500px) {
-  ...
-}
-
 /* MINI PROGRESS */
 .mini-progress {
   width: 100%;
@@ -253,4 +248,58 @@ footer {
   background: linear-gradient(90deg, #00d9ff, #7c3cff);
   box-shadow: 0 0 10px rgba(0,217,255,0.5);
   transition: width 0.1s linear;
+}
+
+/* 📱 MOBILE */
+@media (max-width: 500px) {
+  .hero {
+    padding: 24px 5%;
+  }
+
+  h1 {
+    font-size: 36px;
+  }
+
+  main {
+    padding: 18px 5%;
+  }
+
+  .song-card {
+    grid-template-columns: 1fr;
+  }
+
+  .cover {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .song-title {
+    font-size: 18px;
+  }
+
+  button {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .waveform {
+    height: 60px;
+  }
+
+  .mini-player {
+    bottom: 12px;
+    width: 94%;
+    grid-template-columns: 48px 1fr 48px;
+  }
+
+  .mini-player img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .mini-play-btn {
+    width: 42px;
+    height: 42px;
+  }
 }
