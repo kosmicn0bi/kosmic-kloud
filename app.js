@@ -9,7 +9,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCHfRvoY_hQfGWvDDsmSwtJ91wDbVuMdGk",
+  apiKey: "AIzaSyCHfRvoY_hQfGWvDDsmSwtJ91wDbGk",
   authDomain: "kosmic-kloud.firebaseapp.com",
   projectId: "kosmic-kloud",
   storageBucket: "kosmic-kloud.firebasestorage.app",
@@ -96,16 +96,13 @@ function applyVolumeToAllPlayers() {
   });
 }
 
-/* 🔥 FIXED LOOP + SHUFFLE LOGIC */
 function getNextSong(currentId) {
   const currentIndex = songs.findIndex((s) => s.id === currentId);
 
-  // 🔁 LOOP = repeat same song
   if (loopEnabled) {
     return songs[currentIndex];
   }
 
-  // 🔀 SHUFFLE = random track
   if (shuffleEnabled && songs.length > 1) {
     let randomIndex;
 
@@ -116,9 +113,7 @@ function getNextSong(currentId) {
     return songs[randomIndex];
   }
 
-  // ▶ NORMAL NEXT
-  const nextSong = songs[currentIndex + 1];
-  return nextSong || null;
+  return songs[currentIndex + 1] || null;
 }
 
 function playSpecificSong(songId) {
@@ -204,14 +199,20 @@ function initWaveform(song) {
       formatTime(wave.getCurrentTime());
 
     if (currentSongId === song.id) {
-      const progress = (wave.getCurrentTime() / wave.getDuration()) * 100;
-      miniProgressBar.style.width = progress + "%";
+      const duration = wave.getDuration();
+      const currentTime = wave.getCurrentTime();
+
+      if (duration > 0) {
+        const progress = (currentTime / duration) * 100;
+        miniProgressBar.style.width = progress + "%";
+      }
     }
   });
 
   wave.on("play", async () => {
     document.getElementById(`play-btn-${song.id}`).innerText = "⏸ Pause";
 
+    setupMediaSession(song);
     updateMiniPlayer(song, true);
     setActiveCard(song.id);
 
@@ -232,14 +233,21 @@ function initWaveform(song) {
   });
 
   wave.on("finish", () => {
+    document.getElementById(`play-btn-${song.id}`).innerText = "▶ Play";
+    document.getElementById(`current-${song.id}`).innerText = "0:00";
+    playCounted[song.id] = false;
     clearActiveCard(song.id);
+
+    if (currentSongId === song.id) {
+      miniProgressBar.style.width = "0%";
+    }
 
     const nextSong = getNextSong(song.id);
 
-    if (nextSong) {
+    if (nextSong && players[nextSong.id]) {
       setTimeout(() => {
         playSpecificSong(nextSong.id);
-      }, 300);
+      }, 400);
     } else {
       updateMiniPlayer(song, false);
     }
@@ -248,11 +256,60 @@ function initWaveform(song) {
   players[song.id] = wave;
 }
 
-/* BUTTONS */
+function setupMediaSession(song) {
+  if (!("mediaSession" in navigator)) return;
+
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: song.title,
+    artist: song.artist,
+    album: "Kosmic Kloud",
+    artwork: [
+      { src: song.cover, sizes: "512x512", type: "image/jpeg" }
+    ]
+  });
+
+  navigator.mediaSession.setActionHandler("play", () => players[song.id].play());
+  navigator.mediaSession.setActionHandler("pause", () => players[song.id].pause());
+}
+
+async function ensureSongDoc(songId) {
+  const songRef = doc(db, "songs", songId);
+  const snap = await getDoc(songRef);
+
+  if (!snap.exists()) {
+    await setDoc(songRef, {
+      plays: 0,
+      likes: 0,
+      shares: 0
+    });
+  }
+
+  return songRef;
+}
+
+async function increaseStat(songId, field) {
+  const songRef = await ensureSongDoc(songId);
+
+  await updateDoc(songRef, {
+    [field]: increment(1)
+  });
+}
+
+async function loadStats(songId) {
+  const songRef = await ensureSongDoc(songId);
+  const snap = await getDoc(songRef);
+  const data = snap.data();
+
+  document.getElementById(`plays-${songId}`).innerText = `Plays: ${data.plays || 0}`;
+  document.getElementById(`likes-${songId}`).innerText = `Likes: ${data.likes || 0}`;
+  document.getElementById(`shares-${songId}`).innerText = `Shares: ${data.shares || 0}`;
+}
+
 window.playSong = (songId) => {
   Object.keys(players).forEach((id) => {
     if (id !== songId) {
       players[id].pause();
+      document.getElementById(`play-btn-${id}`).innerText = "▶ Play";
       clearActiveCard(id);
     }
   });
@@ -260,13 +317,49 @@ window.playSong = (songId) => {
   players[songId].playPause();
 };
 
+window.likeSong = async (songId) => {
+  const likedKey = `liked_${songId}`;
+
+  if (localStorage.getItem(likedKey)) {
+    alert("You already liked this track on this device.");
+    return;
+  }
+
+  await increaseStat(songId, "likes");
+  localStorage.setItem(likedKey, "true");
+  await loadStats(songId);
+};
+
+window.shareSong = async (songId, title, artist) => {
+  const shareData = {
+    title: `${title} by ${artist} on Kosmic Kloud`,
+    text: `Listen to ${title} by ${artist} on Kosmic Kloud`,
+    url: window.location.href
+  };
+
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData);
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
+      alert("Link copied!");
+    }
+
+    await increaseStat(songId, "shares");
+    await loadStats(songId);
+  } catch (error) {
+    console.log("Share cancelled or failed:", error);
+  }
+};
+
 miniPlayBtn.addEventListener("click", () => {
-  if (!currentSongId) return;
+  if (!currentSongId || !players[currentSongId]) return;
+
   players[currentSongId].playPause();
 });
 
 miniProgress.addEventListener("click", (e) => {
-  if (!currentSongId) return;
+  if (!currentSongId || !players[currentSongId]) return;
 
   const rect = miniProgress.getBoundingClientRect();
   const percent = (e.clientX - rect.left) / rect.width;
@@ -279,15 +372,25 @@ volumeSlider.addEventListener("input", () => {
   applyVolumeToAllPlayers();
 });
 
-/* 🔀 SHUFFLE */
 shuffleBtn.addEventListener("click", () => {
   shuffleEnabled = !shuffleEnabled;
+
+  if (shuffleEnabled) {
+    loopEnabled = false;
+    loopBtn.classList.remove("active");
+  }
+
   shuffleBtn.classList.toggle("active", shuffleEnabled);
 });
 
-/* 🔁 LOOP */
 loopBtn.addEventListener("click", () => {
   loopEnabled = !loopEnabled;
+
+  if (loopEnabled) {
+    shuffleEnabled = false;
+    shuffleBtn.classList.remove("active");
+  }
+
   loopBtn.classList.toggle("active", loopEnabled);
 });
 
