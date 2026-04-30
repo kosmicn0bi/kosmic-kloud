@@ -34,7 +34,7 @@ const songs = [
     title: "ARC",
     artist: "Kosmic Noize",
     file: "songs/ARC.mp3",
-    cover: "covers/Arcart.jpeg",
+    cover: "covers/Arcart.JPG",
     description: "Arc — second drop."
   }
 ];
