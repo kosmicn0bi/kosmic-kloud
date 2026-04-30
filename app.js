@@ -9,7 +9,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCHfRvoY_hQfGWvDDsmSwtJ91wDbGk",
+  apiKey: "AIzaSyCHfRvoY_hQfGWvDDsmSwtJ91wDbVuMdGk",
   authDomain: "kosmic-kloud.firebaseapp.com",
   projectId: "kosmic-kloud",
   storageBucket: "kosmic-kloud.firebasestorage.app",
@@ -212,7 +212,6 @@ function initWaveform(song) {
   wave.on("play", async () => {
     document.getElementById(`play-btn-${song.id}`).innerText = "⏸ Pause";
 
-    setupMediaSession(song);
     updateMiniPlayer(song, true);
     setActiveCard(song.id);
 
@@ -254,22 +253,6 @@ function initWaveform(song) {
   });
 
   players[song.id] = wave;
-}
-
-function setupMediaSession(song) {
-  if (!("mediaSession" in navigator)) return;
-
-  navigator.mediaSession.metadata = new MediaMetadata({
-    title: song.title,
-    artist: song.artist,
-    album: "Kosmic Kloud",
-    artwork: [
-      { src: song.cover, sizes: "512x512", type: "image/jpeg" }
-    ]
-  });
-
-  navigator.mediaSession.setActionHandler("play", () => players[song.id].play());
-  navigator.mediaSession.setActionHandler("pause", () => players[song.id].pause());
 }
 
 async function ensureSongDoc(songId) {
