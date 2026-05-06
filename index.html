@@ -9,49 +9,46 @@
 <body>
 
   <header class="hero">
-    <div>
-      <p class="eyebrow">Independent sounds • bootlegs • underground drops</p>
-      <h1>Kosmic Kloud</h1>
-      <p class="tagline">A private cloud for tracks, remixes, edits, and sounds from the crew.</p>
-    </div>
+    <span class="eyebrow">Independent sounds • bootlegs • underground drops</span>
+    <h1>Kosmic Kloud</h1>
+    <p class="tagline">A private cloud for tracks, remixes, edits, and sounds from the crew.</p>
   </header>
 
   <main>
     <section class="section-header">
-      <h2>Latest Drops</h2>
-      <p>Stream, like, and share tracks from Kosmic Kloud.</p>
+      <h2>Tracks</h2>
+      <p>Stream the latest drops.</p>
     </section>
 
-    <section id="song-list" class="song-grid"></section>
+    <section id="song-grid" class="song-grid"></section>
   </main>
 
   <footer>
-    <p>© Kosmic Kloud — independent music platform</p>
+    Kosmic Kloud © 2026
   </footer>
 
-  <div id="mini-player" class="mini-player hidden">
-    <img id="mini-cover" src="" alt="Now playing cover" />
+  <div id="mini-player" class="hidden">
+    <img id="mini-cover" src="" alt="Cover" />
 
     <div class="mini-info">
-      <p id="mini-title">Not playing</p>
-      <span id="mini-artist">Kosmic Noize</span>
+      <p id="mini-title">Track Title</p>
+      <span id="mini-artist">Artist</span>
 
-      <div id="mini-progress" class="mini-progress">
-        <div id="mini-progress-bar" class="mini-progress-bar"></div>
+      <div id="mini-progress">
+        <div id="mini-progress-bar"></div>
       </div>
     </div>
 
     <button id="shuffle-btn" class="mini-control-btn">🔀</button>
-    <button id="mini-play-btn" class="mini-play-btn">▶</button>
+    <button id="mini-play-btn">▶</button>
     <button id="loop-btn" class="mini-control-btn">🔁</button>
 
     <div class="volume-wrap">
       <span class="volume-icon">🔊</span>
-      <input id="volume-slider" type="range" min="0" max="100" value="100" />
+      <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="1" />
     </div>
   </div>
 
-  <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
   <script type="module" src="app.js"></script>
 </body>
 </html>
