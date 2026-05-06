@@ -29,20 +29,20 @@ const db = getFirestore(app);
 /* 🎵 SONGS */
 const songs = [
   {
-    id: "song1",
-    title: "Point Blank",
+     id: "song1",
+    title: "My First Track",
     artist: "Kosmic Noize",
-    description: "Independent underground drop.",
-    audio: "song1.mp3",
-    cover: "cover1.jpg"
+    file: "songs/song1.mp3",
+    cover: "covers/cover1.jpg",
+    description: "First official Kosmic Kloud test drop."
   },
   {
     id: "song2",
-    title: "Arc",
+    title: "ARC",
     artist: "Kosmic Noize",
-    description: "Heavy electronic energy from the cloud.",
-    audio: "ARC.mp3",
-    cover: "Arcart.JPG"
+    file: "songs/ARC.mp3",
+    cover: "covers/Arcart.JPG",
+    description: "Hey — Dont Shoot!"
   }
 ];
 
