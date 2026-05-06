@@ -33,7 +33,7 @@ const songs = [
     title: "Point Blank",
     artist: "Kosmic Noize",
     description: "Independent underground drop.",
-    audio: "Song1.mp3",
+    audio: "song1.mp3",
     cover: "cover1.jpg"
   },
   {
