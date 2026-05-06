@@ -33,16 +33,16 @@ const songs = [
     title: "Point Blank",
     artist: "Kosmic Noize",
     description: "Independent underground drop.",
-    audio: "pointblank.mp3",
-    cover: "pointblank.jpg"
+    audio: "Song1.mp3",
+    cover: "cover1.jpg"
   },
   {
     id: "song2",
     title: "Arc",
     artist: "Kosmic Noize",
     description: "Heavy electronic energy from the cloud.",
-    audio: "Arc.mp3",
-    cover: "Arcart.jpg"
+    audio: "ARC.mp3",
+    cover: "Arcart.JPG"
   }
 ];
 
