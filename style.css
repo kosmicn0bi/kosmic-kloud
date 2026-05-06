@@ -15,7 +15,6 @@ body {
     #070812;
 }
 
-/* BACKGROUND EFFECTS */
 body::before {
   content: "";
   position: fixed;
@@ -49,7 +48,6 @@ body::after {
   50% { transform: translate(-40px, 35px); }
 }
 
-/* HERO */
 .hero {
   padding: 40px 6%;
   border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -81,7 +79,6 @@ body::after {
   margin: 0 auto;
 }
 
-/* MAIN */
 main {
   padding: 20px 6%;
 }
@@ -96,14 +93,12 @@ main {
   font-size: 14px;
 }
 
-/* SONG LIST */
 .song-grid {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* CARD */
 .song-card {
   display: grid;
   grid-template-columns: 100px 1fr;
@@ -135,7 +130,6 @@ main {
     0 0 70px rgba(124, 60, 255, 0.28);
 }
 
-/* COVER */
 .cover {
   width: 100px;
   height: 100px;
@@ -143,7 +137,6 @@ main {
   object-fit: cover;
 }
 
-/* TEXT */
 .song-title {
   font-size: 16px;
   margin: 0 0 4px;
@@ -161,15 +154,57 @@ main {
   color: #d7d8e6;
 }
 
-/* WAVEFORM */
-.waveform {
+.waveform-wrap {
+  position: relative;
   height: 50px;
   margin: 10px 0;
   border-radius: 10px;
-  background: rgba(0,217,255,0.04);
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(0,217,255,0.20) 0 3px,
+      rgba(255,255,255,0.04) 3px 8px
+    );
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(0,217,255,0.12);
 }
 
-/* TIME */
+.wave-progress {
+  position: absolute;
+  inset: 0;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(0,217,255,0.35), rgba(124,60,255,0.30));
+  pointer-events: none;
+}
+
+.comment-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #ffffff;
+  box-shadow: 0 0 10px rgba(0,217,255,0.9);
+  cursor: pointer;
+}
+
+.comment-marker:hover::after {
+  content: attr(data-preview);
+  position: absolute;
+  bottom: 54px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 220px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(10,12,28,0.96);
+  border: 1px solid rgba(0,217,255,0.35);
+  color: white;
+  font-size: 11px;
+  z-index: 50;
+}
+
 .time-row {
   font-size: 11px;
   display: flex;
@@ -177,7 +212,6 @@ main {
   margin-bottom: 8px;
 }
 
-/* STATS */
 .stats {
   font-size: 11px;
   display: flex;
@@ -186,10 +220,10 @@ main {
   color: #c7c9d9;
 }
 
-/* BUTTONS */
 .buttons {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 button {
@@ -209,7 +243,85 @@ button:hover {
   transform: scale(1.03);
 }
 
-/* FOOTER */
+.comment-box {
+  display: none;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.045);
+  border: 1px solid rgba(0,217,255,0.18);
+}
+
+.comment-box.open {
+  display: block;
+}
+
+.comment-box-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: #8eeaff;
+}
+
+.comment-name,
+.comment-text {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,217,255,0.2);
+  background: rgba(255,255,255,0.05);
+  color: white;
+  outline: none;
+}
+
+.comment-text {
+  min-height: 70px;
+  resize: none;
+}
+
+.comment-name::placeholder,
+.comment-text::placeholder {
+  color: rgba(255,255,255,0.5);
+}
+
+.comments-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.comment {
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.comment-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.comment-time {
+  color: #00d9ff;
+  cursor: pointer;
+}
+
+.comment-user {
+  color: white;
+  font-weight: bold;
+}
+
+.comment p {
+  margin: 0;
+  font-size: 12px;
+  color: #d7d8e6;
+}
+
 footer {
   padding: 25px 6% 30px;
   color: #8a8fa8;
@@ -313,7 +425,6 @@ footer {
   box-shadow: 0 0 16px rgba(0,217,255,0.4);
 }
 
-/* MINI PROGRESS */
 #mini-progress {
   width: 100%;
   height: 4px;
@@ -331,7 +442,6 @@ footer {
   box-shadow: 0 0 10px rgba(0,217,255,0.5);
 }
 
-/* VOLUME */
 .volume-wrap {
   display: flex;
   align-items: center;
@@ -349,7 +459,6 @@ footer {
   cursor: pointer;
 }
 
-/* MOBILE */
 @media (max-width: 700px) {
   body {
     padding-bottom: 92px;
@@ -386,7 +495,7 @@ footer {
     font-size: 14px;
   }
 
-  .waveform {
+  .waveform-wrap {
     height: 60px;
   }
 
