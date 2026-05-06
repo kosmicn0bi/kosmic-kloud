@@ -3,50 +3,50 @@ import {
   getFirestore,
   doc,
   getDoc,
-  setDoc,
   updateDoc,
-  increment
+  increment,
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  orderBy,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
+/* 🔥 KEEP YOUR FIREBASE CONFIG HERE */
 const firebaseConfig = {
-  apiKey: "AIzaSyCHfRvoY_hQfGWvDDsmSwtJ91wDbVuMdGk",
-  authDomain: "kosmic-kloud.firebaseapp.com",
-  projectId: "kosmic-kloud",
-  storageBucket: "kosmic-kloud.firebasestorage.app",
-  messagingSenderId: "288726984724",
-  appId: "1:288726984724:web:4d5b236ab5565fe6a49f01"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+/* 🎵 SONGS */
 const songs = [
   {
     id: "song1",
-    title: "My First Track",
+    title: "Point Blank",
     artist: "Kosmic Noize",
-    file: "songs/song1.mp3",
-    cover: "covers/cover1.jpg",
-    description: "First official Kosmic Kloud test drop."
+    description: "Independent underground drop.",
+    audio: "pointblank.mp3",
+    cover: "pointblank.jpg"
   },
   {
     id: "song2",
-    title: "ARC",
+    title: "Arc",
     artist: "Kosmic Noize",
-    file: "songs/ARC.mp3",
-    cover: "covers/Arcart.JPG",
-    description: "Hey — Dont Shoot!"
+    description: "Heavy electronic energy from the cloud.",
+    audio: "Arc.mp3",
+    cover: "Arcart.jpg"
   }
 ];
 
-const songList = document.getElementById("song-list");
-const players = {};
-const playCounted = {};
-
-let currentSongId = null;
-let currentVolume = 1;
-let shuffleEnabled = false;
-let loopEnabled = false;
+const songGrid = document.getElementById("song-grid");
 
 const miniPlayer = document.getElementById("mini-player");
 const miniCover = document.getElementById("mini-cover");
@@ -59,322 +59,472 @@ const volumeSlider = document.getElementById("volume-slider");
 const shuffleBtn = document.getElementById("shuffle-btn");
 const loopBtn = document.getElementById("loop-btn");
 
+let audio = new Audio();
+let currentSongIndex = null;
+let isPlaying = false;
+let isShuffle = false;
+let isLoop = false;
+let lastCommentTime = 0;
+
+/* FORMAT TIME */
 function formatTime(seconds) {
   if (!seconds || isNaN(seconds)) return "0:00";
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
-  return `${mins}:${secs}`;
+
+  const min = Math.floor(seconds / 60);
+  const sec = Math.floor(seconds % 60).toString().padStart(2, "0");
+
+  return `${min}:${sec}`;
 }
 
-function setActiveCard(songId) {
+/* PREVIEW LONG COMMENTS */
+function previewText(text, limit = 60) {
+  if (!text) return "";
+  return text.length > limit ? text.substring(0, limit) + "..." : text;
+}
+
+/* RANDOM USER FALLBACK */
+function generateUserName() {
+  const randomNum = Math.floor(10000 + Math.random() * 90000);
+  return `User ${randomNum}`;
+}
+
+/* RENDER SONGS */
+songs.forEach((song, index) => {
+  const card = document.createElement("article");
+  card.className = "song-card";
+  card.dataset.index = index;
+
+  card.innerHTML = `
+    <img class="cover" src="${song.cover}" alt="${song.title} cover">
+
+    <div class="song-content">
+      <h3 class="song-title">${song.title}</h3>
+      <p class="artist">${song.artist}</p>
+      <p class="description">${song.description}</p>
+
+      <div class="waveform-wrap" data-index="${index}">
+        <div class="wave-progress"></div>
+      </div>
+
+      <div class="time-row">
+        <span class="current-time">0:00</span>
+        <span class="duration">0:00</span>
+      </div>
+
+      <div class="stats">
+        <span class="plays">▶ 0 plays</span>
+        <span class="likes">♡ 0 likes</span>
+      </div>
+
+      <div class="buttons">
+        <button class="play-btn">▶ Play</button>
+        <button class="like-btn">♡ Like</button>
+        <button class="comment-toggle-btn">💬 Comment</button>
+        <button class="share-btn">↗ Share</button>
+      </div>
+
+      <div class="comment-box">
+        <p class="comment-box-title">Comment at <span class="comment-at-time">0:00</span></p>
+
+        <input class="comment-name" type="text" placeholder="Name optional" maxlength="20">
+        <textarea class="comment-text" placeholder="Write a comment..." maxlength="250"></textarea>
+
+        <button class="post-comment-btn">Post Comment</button>
+      </div>
+
+      <div class="comments-list"></div>
+    </div>
+  `;
+
+  songGrid.appendChild(card);
+
+  loadStats(song.id, card);
+  loadComments(song.id, card, index);
+});
+
+/* LOAD STATS */
+async function loadStats(songId, card) {
+  const songRef = doc(db, "songs", songId);
+  const snapshot = await getDoc(songRef);
+
+  if (snapshot.exists()) {
+    const data = snapshot.data();
+
+    card.querySelector(".plays").textContent = `▶ ${data.plays || 0} plays`;
+    card.querySelector(".likes").textContent = `♡ ${data.likes || 0} likes`;
+  }
+}
+
+/* PLAY SONG */
+function playSong(index) {
+  const song = songs[index];
+  const wasSameSong = currentSongIndex === index;
+
+  if (wasSameSong && isPlaying) {
+    audio.pause();
+    return;
+  }
+
+  if (!wasSameSong) {
+    audio.src = song.audio;
+    currentSongIndex = index;
+    addPlay(song.id);
+  }
+
+  audio.play();
+
+  miniPlayer.classList.remove("hidden");
+  miniCover.src = song.cover;
+  miniTitle.textContent = song.title;
+  miniArtist.textContent = song.artist;
+
+  updateActiveCard();
+}
+
+/* ADD PLAY */
+async function addPlay(songId) {
+  const songRef = doc(db, "songs", songId);
+
+  try {
+    await updateDoc(songRef, {
+      plays: increment(1)
+    });
+
+    const card = document.querySelector(`[data-index="${currentSongIndex}"]`);
+    loadStats(songId, card);
+  } catch (error) {
+    console.error("Error updating plays:", error);
+  }
+}
+
+/* LIKE SONG */
+async function likeSong(songId, card) {
+  const likedKey = `liked-${songId}`;
+
+  if (localStorage.getItem(likedKey)) {
+    alert("You already liked this track.");
+    return;
+  }
+
+  const songRef = doc(db, "songs", songId);
+
+  try {
+    await updateDoc(songRef, {
+      likes: increment(1)
+    });
+
+    localStorage.setItem(likedKey, "true");
+    loadStats(songId, card);
+  } catch (error) {
+    console.error("Error liking song:", error);
+  }
+}
+
+/* ACTIVE CARD */
+function updateActiveCard() {
   document.querySelectorAll(".song-card").forEach((card) => {
     card.classList.remove("active");
   });
 
-  const activeCard = document.getElementById(`card-${songId}`);
-  if (activeCard) activeCard.classList.add("active");
-}
-
-function clearActiveCard(songId) {
-  const card = document.getElementById(`card-${songId}`);
-  if (card) card.classList.remove("active");
-}
-
-function updateMiniPlayer(song, isPlaying = true) {
-  currentSongId = song.id;
-
-  miniPlayer.classList.remove("hidden");
-  miniCover.src = song.cover;
-  miniTitle.innerText = song.title;
-  miniArtist.innerText = song.artist;
-  miniPlayBtn.innerText = isPlaying ? "⏸" : "▶";
-}
-
-function applyVolumeToAllPlayers() {
-  Object.keys(players).forEach((id) => {
-    players[id].setVolume(currentVolume);
-  });
-}
-
-function getNextSong(currentId) {
-  const currentIndex = songs.findIndex((s) => s.id === currentId);
-
-  if (loopEnabled) {
-    return songs[currentIndex];
+  if (currentSongIndex !== null) {
+    const currentCard = document.querySelector(`[data-index="${currentSongIndex}"]`);
+    currentCard.classList.add("active");
   }
-
-  if (shuffleEnabled && songs.length > 1) {
-    let randomIndex;
-
-    do {
-      randomIndex = Math.floor(Math.random() * songs.length);
-    } while (songs[randomIndex].id === currentId);
-
-    return songs[randomIndex];
-  }
-
-  return songs[currentIndex + 1] || null;
 }
 
-function playSpecificSong(songId) {
-  Object.keys(players).forEach((id) => {
-    if (id !== songId) {
-      players[id].pause();
-      document.getElementById(`play-btn-${id}`).innerText = "▶ Play";
-      clearActiveCard(id);
+/* BUTTON EVENTS */
+document.querySelectorAll(".song-card").forEach((card) => {
+  const index = Number(card.dataset.index);
+  const song = songs[index];
+
+  const playBtn = card.querySelector(".play-btn");
+  const likeBtn = card.querySelector(".like-btn");
+  const shareBtn = card.querySelector(".share-btn");
+  const commentToggleBtn = card.querySelector(".comment-toggle-btn");
+  const commentBox = card.querySelector(".comment-box");
+  const commentAtTime = card.querySelector(".comment-at-time");
+  const postCommentBtn = card.querySelector(".post-comment-btn");
+  const nameInput = card.querySelector(".comment-name");
+  const textInput = card.querySelector(".comment-text");
+  const waveform = card.querySelector(".waveform-wrap");
+
+  playBtn.addEventListener("click", () => {
+    playSong(index);
+  });
+
+  likeBtn.addEventListener("click", () => {
+    likeSong(song.id, card);
+  });
+
+  shareBtn.addEventListener("click", async () => {
+    const url = window.location.href;
+
+    try {
+      await navigator.clipboard.writeText(url);
+      alert("Link copied.");
+    } catch {
+      alert("Copy this link: " + url);
     }
   });
 
-  players[songId].play();
-}
+  commentToggleBtn.addEventListener("click", () => {
+    if (currentSongIndex !== index) {
+      playSong(index);
+    }
 
-function renderSongs() {
-  songList.innerHTML = "";
-
-  songs.forEach((song) => {
-    const card = document.createElement("article");
-    card.className = "song-card";
-    card.id = `card-${song.id}`;
-
-    card.innerHTML = `
-      <img class="cover" src="${song.cover}" alt="${song.title} cover art">
-
-      <div class="song-content">
-        <h3 class="song-title">${song.title}</h3>
-        <p class="artist">${song.artist}</p>
-        <p class="description">${song.description || ""}</p>
-
-        <audio id="media-${song.id}" src="${song.file}" preload="metadata"></audio>
-        <div id="waveform-${song.id}" class="waveform"></div>
-
-        <div class="time-row">
-          <span id="current-${song.id}">0:00</span>
-          <span id="duration-${song.id}">0:00</span>
-        </div>
-
-        <div class="stats">
-          <span id="plays-${song.id}">Plays: 0</span>
-          <span id="likes-${song.id}">Likes: 0</span>
-          <span id="shares-${song.id}">Shares: 0</span>
-        </div>
-
-        <div class="buttons">
-          <button id="play-btn-${song.id}" onclick="playSong('${song.id}')">▶ Play</button>
-          <button onclick="likeSong('${song.id}')">❤️ Like</button>
-          <button onclick="shareSong('${song.id}', '${song.title}', '${song.artist}')">🔁 Share</button>
-        </div>
-      </div>
-    `;
-
-    songList.appendChild(card);
-    initWaveform(song);
-    loadStats(song.id);
-  });
-}
-
-function initWaveform(song) {
-  const audioElement = document.getElementById(`media-${song.id}`);
-
-  const wave = WaveSurfer.create({
-    container: `#waveform-${song.id}`,
-    media: audioElement,
-    waveColor: "#8a8fa8",
-    progressColor: "#00d9ff",
-    cursorColor: "#ffffff",
-    height: 60,
-    barWidth: 2,
-    barGap: 2,
-    barRadius: 2
+    commentBox.classList.toggle("open");
+    commentAtTime.textContent = formatTime(audio.currentTime);
+    textInput.focus();
   });
 
-  wave.setVolume(currentVolume);
+  postCommentBtn.addEventListener("click", async () => {
+    const now = Date.now();
 
-  wave.on("ready", () => {
-    document.getElementById(`duration-${song.id}`).innerText =
-      formatTime(wave.getDuration());
-  });
+    if (now - lastCommentTime < 30000) {
+      alert("Wait 30 seconds before commenting again.");
+      return;
+    }
 
-  wave.on("timeupdate", () => {
-    document.getElementById(`current-${song.id}`).innerText =
-      formatTime(wave.getCurrentTime());
+    let name = nameInput.value.trim();
+    let text = textInput.value.trim();
 
-    if (currentSongId === song.id) {
-      const duration = wave.getDuration();
-      const currentTime = wave.getCurrentTime();
+    if (!text) {
+      alert("Write a comment first.");
+      return;
+    }
 
-      if (duration > 0) {
-        const progress = (currentTime / duration) * 100;
-        miniProgressBar.style.width = progress + "%";
-      }
+    if (!name) {
+      name = generateUserName();
+    }
+
+    const commentTime = currentSongIndex === index ? audio.currentTime : 0;
+
+    try {
+      await addDoc(collection(db, "songs", song.id, "comments"), {
+        name,
+        text,
+        time: commentTime,
+        createdAt: serverTimestamp()
+      });
+
+      lastCommentTime = now;
+      textInput.value = "";
+      commentBox.classList.remove("open");
+    } catch (error) {
+      console.error("Error posting comment:", error);
+      alert("Comment failed. Try again.");
     }
   });
 
-  wave.on("play", async () => {
-    document.getElementById(`play-btn-${song.id}`).innerText = "⏸ Pause";
+  waveform.addEventListener("click", (event) => {
+    if (!audio.duration || currentSongIndex !== index) return;
 
-    updateMiniPlayer(song, true);
-    setActiveCard(song.id);
+    const rect = waveform.getBoundingClientRect();
+    const percent = (event.clientX - rect.left) / rect.width;
 
-    if (!playCounted[song.id]) {
-      playCounted[song.id] = true;
-      await increaseStat(song.id, "plays");
-      await loadStats(song.id);
-    }
+    audio.currentTime = percent * audio.duration;
   });
+});
 
-  wave.on("pause", () => {
-    document.getElementById(`play-btn-${song.id}`).innerText = "▶ Play";
+/* LOAD COMMENTS */
+function loadComments(songId, card, index) {
+  const commentsList = card.querySelector(".comments-list");
+  const waveform = card.querySelector(".waveform-wrap");
 
-    if (currentSongId === song.id) {
-      updateMiniPlayer(song, false);
-      clearActiveCard(song.id);
-    }
-  });
+  const q = query(
+    collection(db, "songs", songId, "comments"),
+    orderBy("createdAt", "desc")
+  );
 
-  wave.on("finish", () => {
-    document.getElementById(`play-btn-${song.id}`).innerText = "▶ Play";
-    document.getElementById(`current-${song.id}`).innerText = "0:00";
-    playCounted[song.id] = false;
-    clearActiveCard(song.id);
+  onSnapshot(q, (snapshot) => {
+    commentsList.innerHTML = "";
 
-    if (currentSongId === song.id) {
-      miniProgressBar.style.width = "0%";
-    }
-
-    const nextSong = getNextSong(song.id);
-
-    if (nextSong && players[nextSong.id]) {
-      setTimeout(() => {
-        playSpecificSong(nextSong.id);
-      }, 400);
-    } else {
-      updateMiniPlayer(song, false);
-    }
-  });
-
-  players[song.id] = wave;
-}
-
-async function ensureSongDoc(songId) {
-  const songRef = doc(db, "songs", songId);
-  const snap = await getDoc(songRef);
-
-  if (!snap.exists()) {
-    await setDoc(songRef, {
-      plays: 0,
-      likes: 0,
-      shares: 0
+    waveform.querySelectorAll(".comment-marker").forEach((marker) => {
+      marker.remove();
     });
+
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+
+      const time = data.time || 0;
+      const name = data.name || "User 00000";
+      const text = data.text || "";
+
+      const commentEl = document.createElement("div");
+      commentEl.className = "comment";
+
+      commentEl.innerHTML = `
+        <div class="comment-top">
+          <span class="comment-time">${formatTime(time)}</span>
+          <span class="comment-user">${name}</span>
+        </div>
+        <p>${previewText(text, 70)}</p>
+      `;
+
+      commentEl.querySelector(".comment-time").addEventListener("click", () => {
+        playSong(index);
+        audio.currentTime = time;
+      });
+
+      commentsList.appendChild(commentEl);
+
+      const marker = document.createElement("span");
+      marker.className = "comment-marker";
+      marker.dataset.preview = `${name}: ${previewText(text, 45)}`;
+
+      marker.style.left = "0%";
+
+      marker.addEventListener("click", (event) => {
+        event.stopPropagation();
+        playSong(index);
+        audio.currentTime = time;
+      });
+
+      marker.dataset.time = time;
+      waveform.appendChild(marker);
+    });
+
+    updateCommentMarkers();
+  });
+}
+
+/* UPDATE COMMENT MARKER POSITIONS */
+function updateCommentMarkers() {
+  document.querySelectorAll(".song-card").forEach((card) => {
+    const index = Number(card.dataset.index);
+    const markers = card.querySelectorAll(".comment-marker");
+
+    markers.forEach((marker) => {
+      const time = Number(marker.dataset.time || 0);
+
+      if (audio.duration && currentSongIndex === index) {
+        const percent = Math.min((time / audio.duration) * 100, 100);
+        marker.style.left = `${percent}%`;
+      } else {
+        marker.style.left = "0%";
+      }
+    });
+  });
+}
+
+/* AUDIO EVENTS */
+audio.addEventListener("play", () => {
+  isPlaying = true;
+  miniPlayBtn.textContent = "⏸";
+
+  document.querySelectorAll(".play-btn").forEach((btn, index) => {
+    btn.textContent = index === currentSongIndex ? "⏸ Pause" : "▶ Play";
+  });
+});
+
+audio.addEventListener("pause", () => {
+  isPlaying = false;
+  miniPlayBtn.textContent = "▶";
+
+  document.querySelectorAll(".play-btn").forEach((btn) => {
+    btn.textContent = "▶ Play";
+  });
+});
+
+audio.addEventListener("loadedmetadata", () => {
+  const card = document.querySelector(`[data-index="${currentSongIndex}"]`);
+
+  if (card) {
+    card.querySelector(".duration").textContent = formatTime(audio.duration);
   }
 
-  return songRef;
-}
+  updateCommentMarkers();
+});
 
-async function increaseStat(songId, field) {
-  const songRef = await ensureSongDoc(songId);
+audio.addEventListener("timeupdate", () => {
+  if (currentSongIndex === null || !audio.duration) return;
 
-  await updateDoc(songRef, {
-    [field]: increment(1)
-  });
-}
+  const percent = (audio.currentTime / audio.duration) * 100;
 
-async function loadStats(songId) {
-  const songRef = await ensureSongDoc(songId);
-  const snap = await getDoc(songRef);
-  const data = snap.data();
+  miniProgressBar.style.width = `${percent}%`;
 
-  document.getElementById(`plays-${songId}`).innerText = `Plays: ${data.plays || 0}`;
-  document.getElementById(`likes-${songId}`).innerText = `Likes: ${data.likes || 0}`;
-  document.getElementById(`shares-${songId}`).innerText = `Shares: ${data.shares || 0}`;
-}
+  const card = document.querySelector(`[data-index="${currentSongIndex}"]`);
 
-window.playSong = (songId) => {
-  Object.keys(players).forEach((id) => {
-    if (id !== songId) {
-      players[id].pause();
-      document.getElementById(`play-btn-${id}`).innerText = "▶ Play";
-      clearActiveCard(id);
+  if (card) {
+    card.querySelector(".wave-progress").style.width = `${percent}%`;
+    card.querySelector(".current-time").textContent = formatTime(audio.currentTime);
+
+    const commentAtTime = card.querySelector(".comment-at-time");
+    if (commentAtTime) {
+      commentAtTime.textContent = formatTime(audio.currentTime);
     }
-  });
+  }
+});
 
-  players[songId].playPause();
-};
-
-window.likeSong = async (songId) => {
-  const likedKey = `liked_${songId}`;
-
-  if (localStorage.getItem(likedKey)) {
-    alert("You already liked this track on this device.");
+audio.addEventListener("ended", () => {
+  if (isLoop) {
+    audio.currentTime = 0;
+    audio.play();
     return;
   }
 
-  await increaseStat(songId, "likes");
-  localStorage.setItem(likedKey, "true");
-  await loadStats(songId);
-};
-
-window.shareSong = async (songId, title, artist) => {
-  const shareData = {
-    title: `${title} by ${artist} on Kosmic Kloud`,
-    text: `Listen to ${title} by ${artist} on Kosmic Kloud`,
-    url: window.location.href
-  };
-
-  try {
-    if (navigator.share) {
-      await navigator.share(shareData);
-    } else {
-      await navigator.clipboard.writeText(window.location.href);
-      alert("Link copied!");
-    }
-
-    await increaseStat(songId, "shares");
-    await loadStats(songId);
-  } catch (error) {
-    console.log("Share cancelled or failed:", error);
-  }
-};
-
-miniPlayBtn.addEventListener("click", () => {
-  if (!currentSongId || !players[currentSongId]) return;
-
-  players[currentSongId].playPause();
+  playNextSong();
 });
 
-miniProgress.addEventListener("click", (e) => {
-  if (!currentSongId || !players[currentSongId]) return;
+/* MINI PLAYER CONTROLS */
+miniPlayBtn.addEventListener("click", () => {
+  if (currentSongIndex === null) return;
+
+  if (isPlaying) {
+    audio.pause();
+  } else {
+    audio.play();
+  }
+});
+
+miniProgress.addEventListener("click", (event) => {
+  if (!audio.duration) return;
 
   const rect = miniProgress.getBoundingClientRect();
-  const percent = (e.clientX - rect.left) / rect.width;
+  const percent = (event.clientX - rect.left) / rect.width;
 
-  players[currentSongId].seekTo(percent);
+  audio.currentTime = percent * audio.duration;
 });
 
 volumeSlider.addEventListener("input", () => {
-  currentVolume = Number(volumeSlider.value) / 100;
-  applyVolumeToAllPlayers();
+  audio.volume = volumeSlider.value;
 });
 
 shuffleBtn.addEventListener("click", () => {
-  shuffleEnabled = !shuffleEnabled;
+  isShuffle = !isShuffle;
 
-  if (shuffleEnabled) {
-    loopEnabled = false;
+  if (isShuffle) {
+    isLoop = false;
     loopBtn.classList.remove("active");
   }
 
-  shuffleBtn.classList.toggle("active", shuffleEnabled);
+  shuffleBtn.classList.toggle("active", isShuffle);
 });
 
 loopBtn.addEventListener("click", () => {
-  loopEnabled = !loopEnabled;
+  isLoop = !isLoop;
 
-  if (loopEnabled) {
-    shuffleEnabled = false;
+  if (isLoop) {
+    isShuffle = false;
     shuffleBtn.classList.remove("active");
   }
 
-  loopBtn.classList.toggle("active", loopEnabled);
+  loopBtn.classList.toggle("active", isLoop);
 });
 
-renderSongs();
+/* NEXT SONG */
+function playNextSong() {
+  if (songs.length <= 1) return;
+
+  let nextIndex;
+
+  if (isShuffle) {
+    do {
+      nextIndex = Math.floor(Math.random() * songs.length);
+    } while (nextIndex === currentSongIndex);
+  } else {
+    nextIndex = (currentSongIndex + 1) % songs.length;
+  }
+
+  playSong(nextIndex);
+}
