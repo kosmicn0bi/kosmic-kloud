@@ -5,13 +5,7 @@ import {
   getDoc,
   setDoc,
   updateDoc,
-  increment,
-  collection,
-  addDoc,
-  serverTimestamp,
-  query,
-  orderBy,
-  onSnapshot
+  increment
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -48,13 +42,11 @@ const songs = [
 const songList = document.getElementById("song-list");
 const players = {};
 const playCounted = {};
-const commentUnsubs = {};
 
 let currentSongId = null;
 let currentVolume = 1;
 let shuffleEnabled = false;
 let loopEnabled = false;
-let lastCommentTime = 0;
 
 const miniPlayer = document.getElementById("mini-player");
 const miniCover = document.getElementById("mini-cover");
@@ -72,16 +64,6 @@ function formatTime(seconds) {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
   return `${mins}:${secs}`;
-}
-
-function previewText(text, limit = 70) {
-  if (!text) return "";
-  return text.length > limit ? text.substring(0, limit) + "..." : text;
-}
-
-function generateUserName() {
-  const randomNum = Math.floor(10000 + Math.random() * 90000);
-  return `User ${randomNum}`;
 }
 
 function setActiveCard(songId) {
@@ -163,11 +145,7 @@ function renderSongs() {
         <p class="description">${song.description || ""}</p>
 
         <audio id="media-${song.id}" src="${song.file}" preload="metadata"></audio>
-
-        <div class="waveform-wrap">
-          <div id="waveform-${song.id}" class="waveform"></div>
-          <div id="comment-markers-${song.id}" class="comment-markers"></div>
-        </div>
+        <div id="waveform-${song.id}" class="waveform"></div>
 
         <div class="time-row">
           <span id="current-${song.id}">0:00</span>
@@ -184,40 +162,13 @@ function renderSongs() {
           <button id="play-btn-${song.id}" onclick="playSong('${song.id}')">▶ Play</button>
           <button onclick="likeSong('${song.id}')">❤️ Like</button>
           <button onclick="shareSong('${song.id}', '${song.title}', '${song.artist}')">🔁 Share</button>
-          <button onclick="openCommentBox('${song.id}')">💬 Comment</button>
         </div>
-
-        <div id="comment-box-${song.id}" class="comment-box">
-          <p class="comment-box-title">
-            Comment at <span id="comment-time-${song.id}">0:00</span>
-          </p>
-
-          <input
-            id="comment-name-${song.id}"
-            class="comment-name"
-            type="text"
-            placeholder="Name optional"
-            maxlength="20"
-          />
-
-          <textarea
-            id="comment-text-${song.id}"
-            class="comment-text"
-            placeholder="Write a comment..."
-            maxlength="250"
-          ></textarea>
-
-          <button onclick="postComment('${song.id}')">Post Comment</button>
-        </div>
-
-        <div id="comments-list-${song.id}" class="comments-list"></div>
       </div>
     `;
 
     songList.appendChild(card);
     initWaveform(song);
     loadStats(song.id);
-    loadComments(song.id);
   });
 }
 
@@ -241,18 +192,11 @@ function initWaveform(song) {
   wave.on("ready", () => {
     document.getElementById(`duration-${song.id}`).innerText =
       formatTime(wave.getDuration());
-
-    renderCommentMarkers(song.id);
   });
 
   wave.on("timeupdate", () => {
     document.getElementById(`current-${song.id}`).innerText =
       formatTime(wave.getCurrentTime());
-
-    const commentTime = document.getElementById(`comment-time-${song.id}`);
-    if (commentTime) {
-      commentTime.innerText = formatTime(wave.getCurrentTime());
-    }
 
     if (currentSongId === song.id) {
       const duration = wave.getDuration();
@@ -344,10 +288,6 @@ async function loadStats(songId) {
   document.getElementById(`shares-${songId}`).innerText = `Shares: ${data.shares || 0}`;
 }
 
-function getSongById(songId) {
-  return songs.find((song) => song.id === songId);
-}
-
 window.playSong = (songId) => {
   Object.keys(players).forEach((id) => {
     if (id !== songId) {
@@ -394,176 +334,6 @@ window.shareSong = async (songId, title, artist) => {
     console.log("Share cancelled or failed:", error);
   }
 };
-
-window.openCommentBox = (songId) => {
-  const box = document.getElementById(`comment-box-${songId}`);
-  const textInput = document.getElementById(`comment-text-${songId}`);
-  const timeLabel = document.getElementById(`comment-time-${songId}`);
-
-  if (!box || !players[songId]) return;
-
-  box.classList.toggle("open");
-  timeLabel.innerText = formatTime(players[songId].getCurrentTime());
-
-  if (box.classList.contains("open")) {
-    textInput.focus();
-  }
-};
-
-window.postComment = async (songId) => {
-  const now = Date.now();
-
-  if (now - lastCommentTime < 30000) {
-    alert("Wait 30 seconds before commenting again.");
-    return;
-  }
-
-  const nameInput = document.getElementById(`comment-name-${songId}`);
-  const textInput = document.getElementById(`comment-text-${songId}`);
-  const box = document.getElementById(`comment-box-${songId}`);
-
-  let name = nameInput.value.trim();
-  const text = textInput.value.trim();
-
-  if (!text) {
-    alert("Write a comment first.");
-    return;
-  }
-
-  if (!name) {
-    name = generateUserName();
-  }
-
-  const time = players[songId] ? players[songId].getCurrentTime() : 0;
-
-  try {
-    await addDoc(collection(db, "songs", songId, "comments"), {
-      name,
-      text,
-      time,
-      createdAt: serverTimestamp()
-    });
-
-    lastCommentTime = now;
-    textInput.value = "";
-    box.classList.remove("open");
-  } catch (error) {
-    console.error("Error posting comment:", error);
-    alert("Comment failed. Try again.");
-  }
-};
-
-function loadComments(songId) {
-  if (commentUnsubs[songId]) {
-    commentUnsubs[songId]();
-  }
-
-  const commentsQuery = query(
-    collection(db, "songs", songId, "comments"),
-    orderBy("createdAt", "desc")
-  );
-
-  commentUnsubs[songId] = onSnapshot(commentsQuery, (snapshot) => {
-    const commentsList = document.getElementById(`comments-list-${songId}`);
-
-    if (!commentsList) return;
-
-    commentsList.innerHTML = "";
-
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-
-      const comment = document.createElement("div");
-      comment.className = "comment";
-
-      const top = document.createElement("div");
-      top.className = "comment-top";
-
-      const time = document.createElement("span");
-      time.className = "comment-time";
-      time.innerText = formatTime(data.time || 0);
-      time.addEventListener("click", () => {
-        if (players[songId]) {
-          playSpecificSong(songId);
-          players[songId].setTime(data.time || 0);
-        }
-      });
-
-      const user = document.createElement("span");
-      user.className = "comment-user";
-      user.innerText = data.name || "User 00000";
-
-      const text = document.createElement("p");
-      text.innerText = previewText(data.text || "", 80);
-
-      top.appendChild(time);
-      top.appendChild(user);
-
-      comment.appendChild(top);
-      comment.appendChild(text);
-
-      commentsList.appendChild(comment);
-    });
-
-    renderCommentMarkers(songId, snapshot);
-  });
-}
-
-async function renderCommentMarkers(songId, snapshotFromListener = null) {
-  const markerWrap = document.getElementById(`comment-markers-${songId}`);
-  const wave = players[songId];
-
-  if (!markerWrap || !wave) return;
-
-  markerWrap.innerHTML = "";
-
-  const duration = wave.getDuration();
-
-  if (!duration || duration <= 0) return;
-
-  if (snapshotFromListener) {
-    snapshotFromListener.forEach((docSnap) => {
-      createCommentMarker(songId, docSnap.data(), duration);
-    });
-
-    return;
-  }
-
-  const commentsQuery = query(
-    collection(db, "songs", songId, "comments"),
-    orderBy("createdAt", "desc")
-  );
-
-  onSnapshot(commentsQuery, (snapshot) => {
-    markerWrap.innerHTML = "";
-
-    snapshot.forEach((docSnap) => {
-      createCommentMarker(songId, docSnap.data(), duration);
-    });
-  });
-}
-
-function createCommentMarker(songId, data, duration) {
-  const markerWrap = document.getElementById(`comment-markers-${songId}`);
-  const time = data.time || 0;
-  const percent = Math.min(Math.max((time / duration) * 100, 0), 100);
-
-  const marker = document.createElement("button");
-  marker.className = "comment-marker";
-  marker.style.left = `${percent}%`;
-  marker.title = `${data.name || "User 00000"}: ${previewText(data.text || "", 60)}`;
-
-  marker.addEventListener("click", (event) => {
-    event.stopPropagation();
-
-    if (players[songId]) {
-      playSpecificSong(songId);
-      players[songId].setTime(time);
-    }
-  });
-
-  markerWrap.appendChild(marker);
-}
 
 miniPlayBtn.addEventListener("click", () => {
   if (!currentSongId || !players[currentSongId]) return;
