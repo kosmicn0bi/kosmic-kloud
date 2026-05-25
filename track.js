@@ -5,6 +5,7 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
   increment,
   collection,
   addDoc,
@@ -67,6 +68,17 @@ function formatTime(seconds) {
 
 function getRandomUserName() {
   return `User ${Math.floor(1000 + Math.random() * 9000)}`;
+}
+
+function getOwnerToken() {
+  let token = localStorage.getItem("phase_sector_comment_owner_token");
+
+  if (!token) {
+    token = crypto.randomUUID();
+    localStorage.setItem("phase_sector_comment_owner_token", token);
+  }
+
+  return token;
 }
 
 async function ensureSongDoc(songId) {
@@ -257,54 +269,91 @@ async function postComment() {
 
   const name = nameInput.value.trim() || getRandomUserName();
   const text = textInput.value.trim();
+  const ownerToken = getOwnerToken();
 
   if (!text) {
     alert("Write a comment first.");
     return;
   }
 
-  await addDoc(collection(db, "songs", song.id, "comments"), {
-    name: name,
-    text: text,
-    createdAt: serverTimestamp()
-  });
+  try {
+    await addDoc(collection(db, "songs", song.id, "comments"), {
+      name: name,
+      text: text,
+      ownerToken: ownerToken,
+      createdAt: serverTimestamp()
+    });
 
-  nameInput.value = "";
-  textInput.value = "";
+    nameInput.value = "";
+    textInput.value = "";
 
-  await loadComments();
+    await loadComments();
+  } catch (error) {
+    console.error("Comment failed:", error);
+    alert("Comment could not be posted. Check Firebase rules.");
+  }
 }
 
 async function loadComments() {
   const commentsList = document.getElementById("comments-list");
   commentsList.innerHTML = `<p class="no-comments">Loading comments...</p>`;
 
-  const commentsRef = collection(db, "songs", song.id, "comments");
-  const commentsQuery = query(commentsRef, orderBy("createdAt", "desc"));
-  const snapshot = await getDocs(commentsQuery);
+  try {
+    const commentsRef = collection(db, "songs", song.id, "comments");
+    const commentsQuery = query(commentsRef, orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(commentsQuery);
+    const ownerToken = getOwnerToken();
 
-  if (snapshot.empty) {
-    commentsList.innerHTML = `<p class="no-comments">No comments yet. Be the first.</p>`;
-    return;
+    if (snapshot.empty) {
+      commentsList.innerHTML = `<p class="no-comments">No comments yet. Be the first.</p>`;
+      return;
+    }
+
+    commentsList.innerHTML = "";
+
+    snapshot.forEach((docSnap) => {
+      const comment = docSnap.data();
+      const commentId = docSnap.id;
+      const canDelete = comment.ownerToken === ownerToken;
+
+      const commentCard = document.createElement("div");
+      commentCard.className = "comment-card";
+
+      commentCard.innerHTML = `
+        <div class="comment-header">
+          <strong>${comment.name || "User"}</strong>
+          ${canDelete ? `<button class="delete-comment-btn" data-comment-id="${commentId}">Delete</button>` : ""}
+        </div>
+        <p>${comment.text}</p>
+      `;
+
+      commentsList.appendChild(commentCard);
+    });
+
+    document.querySelectorAll(".delete-comment-btn").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const commentId = button.getAttribute("data-comment-id");
+        await deleteComment(commentId);
+      });
+    });
+  } catch (error) {
+    console.error("Comments failed to load:", error);
+    commentsList.innerHTML = `<p class="no-comments">Comments could not load. Check Firebase rules.</p>`;
   }
+}
 
-  commentsList.innerHTML = "";
+async function deleteComment(commentId) {
+  const confirmDelete = confirm("Delete your comment?");
 
-  snapshot.forEach((docSnap) => {
-    const comment = docSnap.data();
+  if (!confirmDelete) return;
 
-    const commentCard = document.createElement("div");
-    commentCard.className = "comment-card";
-
-    commentCard.innerHTML = `
-      <div class="comment-header">
-        <strong>${comment.name || "User"}</strong>
-      </div>
-      <p>${comment.text}</p>
-    `;
-
-    commentsList.appendChild(commentCard);
-  });
+  try {
+    await deleteDoc(doc(db, "songs", song.id, "comments", commentId));
+    await loadComments();
+  } catch (error) {
+    console.error("Delete failed:", error);
+    alert("Comment could not be deleted.");
+  }
 }
 
 renderTrack();
