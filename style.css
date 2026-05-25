@@ -530,3 +530,32 @@ footer {
 
   color: #7d848c;
 }
+.delete-comment-btn {
+  flex: unset;
+
+  padding: 5px 10px;
+
+  font-size: 11px;
+
+  background: rgba(255,255,255,0.04);
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  color: #9ea5ad;
+
+  box-shadow: none;
+}
+
+.delete-comment-btn:hover {
+  color: #ffffff;
+
+  border-color: rgba(255,80,80,0.35);
+
+  box-shadow: 0 0 14px rgba(255,80,80,0.1);
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
