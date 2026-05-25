@@ -5,7 +5,13 @@ import {
   getDoc,
   setDoc,
   updateDoc,
-  increment
+  increment,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -23,11 +29,11 @@ const db = getFirestore(app);
 const songs = [
   {
     id: "song1",
-    title: "Stepbro Chill",
+    title: "My First Track",
     artist: "Kosmic Noize",
     file: "songs/song1.mp3",
     cover: "covers/cover1.jpg",
-    description: "What the hell is even that?!",
+    description: "First official Phase Sector test drop.",
     posted: "2026-05-24"
   },
   {
@@ -57,6 +63,10 @@ function formatTime(seconds) {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
   return `${mins}:${secs}`;
+}
+
+function getRandomUserName() {
+  return `User ${Math.floor(1000 + Math.random() * 9000)}`;
 }
 
 async function ensureSongDoc(songId) {
@@ -132,11 +142,26 @@ function renderTrack() {
         <button id="like-btn">❤️ Like</button>
         <button id="share-btn">🔁 Share</button>
       </div>
+
+      <section class="comments-section">
+        <h3>Comments</h3>
+
+        <div class="comment-form">
+          <input id="comment-name" type="text" placeholder="Name optional" maxlength="30" />
+          <textarea id="comment-text" placeholder="Leave a comment..." maxlength="300"></textarea>
+          <button id="comment-btn">Post Comment</button>
+        </div>
+
+        <div id="comments-list" class="comments-list"></div>
+      </section>
     </div>
   `;
 
   initWaveform();
   loadStats(song.id);
+  loadComments();
+
+  document.getElementById("comment-btn").addEventListener("click", postComment);
 }
 
 function initWaveform() {
@@ -224,6 +249,62 @@ async function shareSong() {
   } catch (error) {
     console.log("Share cancelled or failed:", error);
   }
+}
+
+async function postComment() {
+  const nameInput = document.getElementById("comment-name");
+  const textInput = document.getElementById("comment-text");
+
+  const name = nameInput.value.trim() || getRandomUserName();
+  const text = textInput.value.trim();
+
+  if (!text) {
+    alert("Write a comment first.");
+    return;
+  }
+
+  await addDoc(collection(db, "songs", song.id, "comments"), {
+    name: name,
+    text: text,
+    createdAt: serverTimestamp()
+  });
+
+  nameInput.value = "";
+  textInput.value = "";
+
+  await loadComments();
+}
+
+async function loadComments() {
+  const commentsList = document.getElementById("comments-list");
+  commentsList.innerHTML = `<p class="no-comments">Loading comments...</p>`;
+
+  const commentsRef = collection(db, "songs", song.id, "comments");
+  const commentsQuery = query(commentsRef, orderBy("createdAt", "desc"));
+  const snapshot = await getDocs(commentsQuery);
+
+  if (snapshot.empty) {
+    commentsList.innerHTML = `<p class="no-comments">No comments yet. Be the first.</p>`;
+    return;
+  }
+
+  commentsList.innerHTML = "";
+
+  snapshot.forEach((docSnap) => {
+    const comment = docSnap.data();
+
+    const commentCard = document.createElement("div");
+    commentCard.className = "comment-card";
+
+    commentCard.innerHTML = `
+      <div class="comment-header">
+        <strong>${comment.name || "User"}</strong>
+      </div>
+      <p>${comment.text}</p>
+    `;
+
+    commentsList.appendChild(commentCard);
+  });
 }
 
 renderTrack();
