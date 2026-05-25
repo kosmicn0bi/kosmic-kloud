@@ -23,11 +23,11 @@ const db = getFirestore(app);
 const songs = [
   {
     id: "song1",
-    title: "Stepbro Chill",
+    title: "My First Track",
     artist: "Kosmic Noize",
     file: "songs/song1.mp3",
     cover: "covers/cover1.jpg",
-    description: "What the hell is even that?!"
+    description: "First official Phase Sector test drop."
   },
   {
     id: "song2",
@@ -315,8 +315,8 @@ window.likeSong = async (songId) => {
 
 window.shareSong = async (songId, title, artist) => {
   const shareData = {
-    title: `${title} by ${artist} on Kosmic Kloud`,
-    text: `Listen to ${title} by ${artist} on Kosmic Kloud`,
+    title: `${title} by ${artist} on Phase Sector`,
+    text: `Listen to ${title} by ${artist} on Phase Sector`,
     url: window.location.href
   };
 
