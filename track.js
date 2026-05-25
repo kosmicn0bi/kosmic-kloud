@@ -23,11 +23,11 @@ const db = getFirestore(app);
 const songs = [
   {
     id: "song1",
-    title: "My First Track",
+    title: "Stepbro Chill",
     artist: "Kosmic Noize",
     file: "songs/song1.mp3",
     cover: "covers/cover1.jpg",
-    description: "First official Phase Sector test drop.",
+    description: "What the hell is even that?!",
     posted: "2026-05-24"
   },
   {
