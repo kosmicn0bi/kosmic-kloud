@@ -1,140 +1,36 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  increment
-} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCHfRvoY_hQfGWvDDsmSwtJ91wDbVuMdGk",
-  authDomain: "kosmic-kloud.firebaseapp.com",
-  projectId: "kosmic-kloud",
-  storageBucket: "kosmic-kloud.firebasestorage.app",
-  messagingSenderId: "288726984724",
-  appId: "1:288726984724:web:4d5b236ab5565fe6a49f01"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
 const songs = [
-  {
-    id: "song1",
-    title: "STEPBRO CHILL",
-    artist: "Kosmic Noize",
-    file: "songs/song1.mp3",
-    cover: "covers/cover1.jpg",
-    description: "What the hell is even that?!"
-  },
   {
     id: "song2",
     title: "ARC",
     artist: "Kosmic Noize",
     file: "songs/ARC.mp3",
     cover: "covers/Arcart.JPG",
-    description: "Hey — Dont Shoot!"
+    description: "Hey — Dont Shoot!",
+    posted: "2026-05-25"
+  },
+  {
+    id: "song1",
+    title: "My First Track",
+    artist: "Kosmic Noize",
+    file: "songs/song1.mp3",
+    cover: "covers/cover1.jpg",
+    description: "First official Phase Sector test drop.",
+    posted: "2026-05-24"
   }
 ];
 
 const songList = document.getElementById("song-list");
-const players = {};
-const playCounted = {};
-
-let currentSongId = null;
-let currentVolume = 1;
-let shuffleEnabled = false;
-let loopEnabled = false;
-
-const miniPlayer = document.getElementById("mini-player");
-const miniCover = document.getElementById("mini-cover");
-const miniTitle = document.getElementById("mini-title");
-const miniArtist = document.getElementById("mini-artist");
-const miniPlayBtn = document.getElementById("mini-play-btn");
-const miniProgress = document.getElementById("mini-progress");
-const miniProgressBar = document.getElementById("mini-progress-bar");
-const volumeSlider = document.getElementById("volume-slider");
-const shuffleBtn = document.getElementById("shuffle-btn");
-const loopBtn = document.getElementById("loop-btn");
-
-function formatTime(seconds) {
-  if (!seconds || isNaN(seconds)) return "0:00";
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
-  return `${mins}:${secs}`;
-}
-
-function setActiveCard(songId) {
-  document.querySelectorAll(".song-card").forEach((card) => {
-    card.classList.remove("active");
-  });
-
-  const activeCard = document.getElementById(`card-${songId}`);
-  if (activeCard) activeCard.classList.add("active");
-}
-
-function clearActiveCard(songId) {
-  const card = document.getElementById(`card-${songId}`);
-  if (card) card.classList.remove("active");
-}
-
-function updateMiniPlayer(song, isPlaying = true) {
-  currentSongId = song.id;
-
-  miniPlayer.classList.remove("hidden");
-  miniCover.src = song.cover;
-  miniTitle.innerText = song.title;
-  miniArtist.innerText = song.artist;
-  miniPlayBtn.innerText = isPlaying ? "⏸" : "▶";
-}
-
-function applyVolumeToAllPlayers() {
-  Object.keys(players).forEach((id) => {
-    players[id].setVolume(currentVolume);
-  });
-}
-
-function getNextSong(currentId) {
-  const currentIndex = songs.findIndex((s) => s.id === currentId);
-
-  if (loopEnabled) {
-    return songs[currentIndex];
-  }
-
-  if (shuffleEnabled && songs.length > 1) {
-    let randomIndex;
-
-    do {
-      randomIndex = Math.floor(Math.random() * songs.length);
-    } while (songs[randomIndex].id === currentId);
-
-    return songs[randomIndex];
-  }
-
-  return songs[currentIndex + 1] || null;
-}
-
-function playSpecificSong(songId) {
-  Object.keys(players).forEach((id) => {
-    if (id !== songId) {
-      players[id].pause();
-      document.getElementById(`play-btn-${id}`).innerText = "▶ Play";
-      clearActiveCard(id);
-    }
-  });
-
-  players[songId].play();
-}
 
 function renderSongs() {
   songList.innerHTML = "";
 
-  songs.forEach((song) => {
+  const sortedSongs = [...songs].sort((a, b) => {
+    return new Date(b.posted) - new Date(a.posted);
+  });
+
+  sortedSongs.forEach((song) => {
     const card = document.createElement("article");
     card.className = "song-card";
-    card.id = `card-${song.id}`;
 
     card.innerHTML = `
       <img class="cover" src="${song.cover}" alt="${song.title} cover art">
@@ -143,238 +39,16 @@ function renderSongs() {
         <h3 class="song-title">${song.title}</h3>
         <p class="artist">${song.artist}</p>
         <p class="description">${song.description || ""}</p>
-
-        <audio id="media-${song.id}" src="${song.file}" preload="metadata"></audio>
-        <div id="waveform-${song.id}" class="waveform"></div>
-
-        <div class="time-row">
-          <span id="current-${song.id}">0:00</span>
-          <span id="duration-${song.id}">0:00</span>
-        </div>
-
-        <div class="stats">
-          <span id="plays-${song.id}">Plays: 0</span>
-          <span id="likes-${song.id}">Likes: 0</span>
-          <span id="shares-${song.id}">Shares: 0</span>
-        </div>
+        <p class="posted-date">Posted: ${song.posted}</p>
 
         <div class="buttons">
-          <button id="play-btn-${song.id}" onclick="playSong('${song.id}')">▶ Play</button>
-          <button onclick="likeSong('${song.id}')">❤️ Like</button>
-          <button onclick="shareSong('${song.id}', '${song.title}', '${song.artist}')">🔁 Share</button>
+          <a class="button-link" href="track.html?id=${song.id}">View Track</a>
         </div>
       </div>
     `;
 
     songList.appendChild(card);
-    initWaveform(song);
-    loadStats(song.id);
   });
 }
-
-function initWaveform(song) {
-  const audioElement = document.getElementById(`media-${song.id}`);
-
-  const wave = WaveSurfer.create({
-    container: `#waveform-${song.id}`,
-    media: audioElement,
-    waveColor: "#8a8fa8",
-    progressColor: "#00d9ff",
-    cursorColor: "#ffffff",
-    height: 60,
-    barWidth: 2,
-    barGap: 2,
-    barRadius: 2
-  });
-
-  wave.setVolume(currentVolume);
-
-  wave.on("ready", () => {
-    document.getElementById(`duration-${song.id}`).innerText =
-      formatTime(wave.getDuration());
-  });
-
-  wave.on("timeupdate", () => {
-    document.getElementById(`current-${song.id}`).innerText =
-      formatTime(wave.getCurrentTime());
-
-    if (currentSongId === song.id) {
-      const duration = wave.getDuration();
-      const currentTime = wave.getCurrentTime();
-
-      if (duration > 0) {
-        const progress = (currentTime / duration) * 100;
-        miniProgressBar.style.width = progress + "%";
-      }
-    }
-  });
-
-  wave.on("play", async () => {
-    document.getElementById(`play-btn-${song.id}`).innerText = "⏸ Pause";
-
-    updateMiniPlayer(song, true);
-    setActiveCard(song.id);
-
-    if (!playCounted[song.id]) {
-      playCounted[song.id] = true;
-      await increaseStat(song.id, "plays");
-      await loadStats(song.id);
-    }
-  });
-
-  wave.on("pause", () => {
-    document.getElementById(`play-btn-${song.id}`).innerText = "▶ Play";
-
-    if (currentSongId === song.id) {
-      updateMiniPlayer(song, false);
-      clearActiveCard(song.id);
-    }
-  });
-
-  wave.on("finish", () => {
-    document.getElementById(`play-btn-${song.id}`).innerText = "▶ Play";
-    document.getElementById(`current-${song.id}`).innerText = "0:00";
-    playCounted[song.id] = false;
-    clearActiveCard(song.id);
-
-    if (currentSongId === song.id) {
-      miniProgressBar.style.width = "0%";
-    }
-
-    const nextSong = getNextSong(song.id);
-
-    if (nextSong && players[nextSong.id]) {
-      setTimeout(() => {
-        playSpecificSong(nextSong.id);
-      }, 400);
-    } else {
-      updateMiniPlayer(song, false);
-    }
-  });
-
-  players[song.id] = wave;
-}
-
-async function ensureSongDoc(songId) {
-  const songRef = doc(db, "songs", songId);
-  const snap = await getDoc(songRef);
-
-  if (!snap.exists()) {
-    await setDoc(songRef, {
-      plays: 0,
-      likes: 0,
-      shares: 0
-    });
-  }
-
-  return songRef;
-}
-
-async function increaseStat(songId, field) {
-  const songRef = await ensureSongDoc(songId);
-
-  await updateDoc(songRef, {
-    [field]: increment(1)
-  });
-}
-
-async function loadStats(songId) {
-  const songRef = await ensureSongDoc(songId);
-  const snap = await getDoc(songRef);
-  const data = snap.data();
-
-  document.getElementById(`plays-${songId}`).innerText = `Plays: ${data.plays || 0}`;
-  document.getElementById(`likes-${songId}`).innerText = `Likes: ${data.likes || 0}`;
-  document.getElementById(`shares-${songId}`).innerText = `Shares: ${data.shares || 0}`;
-}
-
-window.playSong = (songId) => {
-  Object.keys(players).forEach((id) => {
-    if (id !== songId) {
-      players[id].pause();
-      document.getElementById(`play-btn-${id}`).innerText = "▶ Play";
-      clearActiveCard(id);
-    }
-  });
-
-  players[songId].playPause();
-};
-
-window.likeSong = async (songId) => {
-  const likedKey = `liked_${songId}`;
-
-  if (localStorage.getItem(likedKey)) {
-    alert("You already liked this track on this device.");
-    return;
-  }
-
-  await increaseStat(songId, "likes");
-  localStorage.setItem(likedKey, "true");
-  await loadStats(songId);
-};
-
-window.shareSong = async (songId, title, artist) => {
-  const shareData = {
-    title: `${title} by ${artist} on Phase Sector`,
-    text: `Listen to ${title} by ${artist} on Phase Sector`,
-    url: window.location.href
-  };
-
-  try {
-    if (navigator.share) {
-      await navigator.share(shareData);
-    } else {
-      await navigator.clipboard.writeText(window.location.href);
-      alert("Link copied!");
-    }
-
-    await increaseStat(songId, "shares");
-    await loadStats(songId);
-  } catch (error) {
-    console.log("Share cancelled or failed:", error);
-  }
-};
-
-miniPlayBtn.addEventListener("click", () => {
-  if (!currentSongId || !players[currentSongId]) return;
-
-  players[currentSongId].playPause();
-});
-
-miniProgress.addEventListener("click", (e) => {
-  if (!currentSongId || !players[currentSongId]) return;
-
-  const rect = miniProgress.getBoundingClientRect();
-  const percent = (e.clientX - rect.left) / rect.width;
-
-  players[currentSongId].seekTo(percent);
-});
-
-volumeSlider.addEventListener("input", () => {
-  currentVolume = Number(volumeSlider.value) / 100;
-  applyVolumeToAllPlayers();
-});
-
-shuffleBtn.addEventListener("click", () => {
-  shuffleEnabled = !shuffleEnabled;
-
-  if (shuffleEnabled) {
-    loopEnabled = false;
-    loopBtn.classList.remove("active");
-  }
-
-  shuffleBtn.classList.toggle("active", shuffleEnabled);
-});
-
-loopBtn.addEventListener("click", () => {
-  loopEnabled = !loopEnabled;
-
-  if (loopEnabled) {
-    shuffleEnabled = false;
-    shuffleBtn.classList.remove("active");
-  }
-
-  loopBtn.classList.toggle("active", loopEnabled);
-});
 
 renderSongs();
