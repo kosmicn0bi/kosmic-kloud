@@ -52,7 +52,6 @@ function renderArtistPage() {
 
   document.title = `${artistName} | Phase Sector`;
   artistTitle.innerText = artistName;
-  artistSubtitle.innerText = `${artistName} on Phase Sector`;
 
   if (artistSongs.length === 0) {
     artistCount.innerText = "No tracks found for this artist.";
