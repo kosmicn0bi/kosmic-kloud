@@ -5,10 +5,12 @@ import {
   setDoc,
   serverTimestamp,
   collection,
-  getDocs,
-  deleteDoc,
-  query,
-  orderBy
+getDocs,
+deleteDoc,
+query,
+orderBy,
+addDoc,
+updateDoc
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 const firebaseConfig = {
