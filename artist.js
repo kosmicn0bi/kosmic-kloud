@@ -1,33 +1,23 @@
-const artists = {
-  "Kosmic Noize": {
-    soundcloud: "https://soundcloud.com/kosmicnoize",
-    spotify: "https://open.spotify.com/artist/0mmSncpawq94IaBJSdBcNB",
-    applemusic: "https://music.apple.com/us/artist/kosmic-noize/1625134522",
-    youtube: "https://www.youtube.com/channel/UCbYsYcVcI6n596R0G_altuw"
-  }
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCHfRvoY_hQfGWvDDsmSwtJ91wDbVuMdGk",
+  authDomain: "kosmic-kloud.firebaseapp.com",
+  projectId: "kosmic-kloud",
+  storageBucket: "kosmic-kloud.firebasestorage.app",
+  messagingSenderId: "288726984724",
+  appId: "1:288726984724:web:4d5b236ab5565fe6a49f01"
 };
 
-const songs = [
-  {
-    id: "song1",
-    title: "Stepbro Chill",
-    artist: "Kosmic Noize",
-    file: "songs/song1.mp3",
-    cover: "covers/cover1.jpg",
-    description: "What the hell is even that?!",
-    posted: "2026-05-24"
-  },
-
-  {
-    id: "song2",
-    title: "ARC",
-    artist: "Kosmic Noize",
-    file: "songs/ARC.mp3",
-    cover: "covers/Arcart.JPG",
-    description: "Hey — Dont Shoot!",
-    posted: "2026-05-25"
-  }
-];
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const params = new URLSearchParams(window.location.search);
 const artistName = params.get("artist");
@@ -37,7 +27,16 @@ const artistSubtitle = document.getElementById("artist-page-subtitle");
 const artistCount = document.getElementById("artist-count");
 const artistSongList = document.getElementById("artist-song-list");
 
-function renderArtistPage() {
+function escapeHTML(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+async function loadArtistPage() {
   if (!artistName) {
     artistTitle.innerText = "Artist Not Found";
     artistSubtitle.innerText = "This artist link is invalid.";
@@ -46,10 +45,44 @@ function renderArtistPage() {
     return;
   }
 
-  const artistSongs = songs
-    .filter((song) => song.artist === artistName)
-    .sort((a, b) => new Date(b.posted) - new Date(a.posted));
+  artistTitle.innerText = "Loading...";
+  artistSongList.innerHTML = `<p class="no-comments">Loading artist tracks...</p>`;
 
+  try {
+    const songsQuery = query(
+      collection(db, "songs"),
+      where("artist", "==", artistName)
+    );
+
+    const snapshot = await getDocs(songsQuery);
+
+    const artistSongs = snapshot.docs
+      .map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }))
+      .sort((a, b) => new Date(b.posted) - new Date(a.posted));
+
+    renderArtistPage(artistSongs);
+  } catch (error) {
+    console.error("Artist failed to load:", error);
+    artistTitle.innerText = artistName;
+    artistCount.innerText = "Artist tracks could not load. Check Firebase rules.";
+    artistSongList.innerHTML = "";
+  }
+}
+
+function renderSocialIcon(url, icon, label) {
+  if (!url) return "";
+
+  return `
+    <a href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer" class="social-icon">
+      <img src="/assets/icons/${icon}.svg" alt="${label}">
+    </a>
+  `;
+}
+
+function renderArtistPage(artistSongs) {
   document.title = `${artistName} | Phase Sector`;
   artistTitle.innerText = artistName;
 
@@ -59,27 +92,14 @@ function renderArtistPage() {
     return;
   }
 
-  const artistData = artists[artistName];
+  const socials = artistSongs.find((song) => song.socials)?.socials || {};
 
   artistCount.innerHTML = `
     <div class="artist-socials">
-
-      <a href="${artistData.soundcloud}" target="_blank" class="social-icon">
-        <img src="/assets/icons/soundcloud.svg" alt="SoundCloud">
-      </a>
-
-      <a href="${artistData.spotify}" target="_blank" class="social-icon">
-        <img src="/assets/icons/spotify.svg" alt="Spotify">
-      </a>
-
-      <a href="${artistData.applemusic}" target="_blank" class="social-icon">
-        <img src="/assets/icons/applemusic.svg" alt="Apple Music">
-      </a>
-
-      <a href="${artistData.youtube}" target="_blank" class="social-icon">
-        <img src="/assets/icons/youtube.svg" alt="YouTube">
-      </a>
-
+      ${renderSocialIcon(socials.soundcloud, "soundcloud", "SoundCloud")}
+      ${renderSocialIcon(socials.spotify, "spotify", "Spotify")}
+      ${renderSocialIcon(socials.applemusic, "applemusic", "Apple Music")}
+      ${renderSocialIcon(socials.youtube, "youtube", "YouTube")}
     </div>
 
     <span>${artistSongs.length} track${artistSongs.length === 1 ? "" : "s"} uploaded to Phase Sector</span>
@@ -92,20 +112,20 @@ function renderArtistPage() {
     card.className = "song-card";
 
     card.innerHTML = `
-      <img class="cover" src="${song.cover}" alt="${song.title} cover art">
+      <img class="cover" src="${escapeHTML(song.cover)}" alt="${escapeHTML(song.title)} cover art">
 
       <div class="song-content">
-        <h3 class="song-title">${song.title}</h3>
+        <h3 class="song-title">${escapeHTML(song.title)}</h3>
 
-        <a class="artist artist-link" href="artist.html?artist=${encodeURIComponent(song.artist)}">
-          ${song.artist}
+        <a class="artist artist-link" href="artist.html?artist=${encodeURIComponent(song.artist || "")}">
+          ${escapeHTML(song.artist)}
         </a>
 
-        <p class="description">${song.description || ""}</p>
-        <p class="posted-date">Posted: ${song.posted}</p>
+        <p class="description">${escapeHTML(song.description)}</p>
+        <p class="posted-date">Posted: ${escapeHTML(song.posted)}</p>
 
         <div class="buttons">
-          <a class="button-link" href="track.html?id=${song.id}">View Track</a>
+          <a class="button-link" href="track.html?id=${encodeURIComponent(song.id)}">View Track</a>
         </div>
       </div>
     `;
@@ -114,4 +134,4 @@ function renderArtistPage() {
   });
 }
 
-renderArtistPage();
+loadArtistPage();

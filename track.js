@@ -27,37 +27,25 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const songs = [
-  {
-    id: "song1",
-    title: "Stepbro Chill",
-    artist: "Kosmic Noize",
-    file: "songs/song1.mp3",
-    cover: "covers/cover1.jpg",
-    description: "What the hell is even that?!",
-    posted: "2026-05-24"
-  },
-  {
-    id: "song2",
-    title: "ARC",
-    artist: "Kosmic Noize",
-    file: "songs/ARC.mp3",
-    cover: "covers/Arcart.JPG",
-    description: "Hey — Dont Shoot!",
-    posted: "2026-05-25"
-  }
-];
-
 const params = new URLSearchParams(window.location.search);
 const songId = params.get("id");
-const song = songs.find((s) => s.id === songId);
 
 const trackPage = document.getElementById("track-page");
 const pageTitle = document.getElementById("track-page-title");
 const pageArtist = document.getElementById("track-page-artist");
 
+let song = null;
 let wave;
 let playCounted = false;
+
+function escapeHTML(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
 function formatTime(seconds) {
   if (!seconds || isNaN(seconds)) return "0:00";
@@ -81,8 +69,41 @@ function getOwnerToken() {
   return token;
 }
 
-async function ensureSongDoc(songId) {
-  const songRef = doc(db, "songs", songId);
+async function loadSong() {
+  if (!songId) {
+    renderNotFound();
+    return;
+  }
+
+  try {
+    const songRef = doc(db, "songs", songId);
+    const snap = await getDoc(songRef);
+
+    if (!snap.exists()) {
+      renderNotFound();
+      return;
+    }
+
+    song = {
+      id: snap.id,
+      ...snap.data()
+    };
+
+    renderTrack();
+  } catch (error) {
+    console.error("Track failed to load:", error);
+    renderNotFound();
+  }
+}
+
+function renderNotFound() {
+  pageTitle.innerText = "Track Not Found";
+  pageArtist.innerText = "This track link is invalid.";
+  trackPage.innerHTML = `<p class="description">Go back to the homepage and choose a track.</p>`;
+}
+
+async function ensureSongDoc(id) {
+  const songRef = doc(db, "songs", id);
   const snap = await getDoc(songRef);
 
   if (!snap.exists()) {
@@ -96,16 +117,16 @@ async function ensureSongDoc(songId) {
   return songRef;
 }
 
-async function increaseStat(songId, field) {
-  const songRef = await ensureSongDoc(songId);
+async function increaseStat(id, field) {
+  const songRef = await ensureSongDoc(id);
 
   await updateDoc(songRef, {
     [field]: increment(1)
   });
 }
 
-async function loadStats(songId) {
-  const songRef = await ensureSongDoc(songId);
+async function loadStats(id) {
+  const songRef = await ensureSongDoc(id);
   const snap = await getDoc(songRef);
   const data = snap.data();
 
@@ -115,31 +136,24 @@ async function loadStats(songId) {
 }
 
 function renderTrack() {
-  if (!song) {
-    pageTitle.innerText = "Track Not Found";
-    pageArtist.innerText = "This track link is invalid.";
-    trackPage.innerHTML = `<p class="description">Go back to the homepage and choose a track.</p>`;
-    return;
-  }
-
   document.title = `${song.title} | Phase Sector`;
   pageTitle.innerText = song.title;
   pageArtist.innerText = song.artist;
 
   trackPage.innerHTML = `
-    <img class="track-cover" src="${song.cover}" alt="${song.title} cover art">
+    <img class="track-cover" src="${escapeHTML(song.cover)}" alt="${escapeHTML(song.title)} cover art">
 
     <div class="track-info">
-      <h2>${song.title}</h2>
+      <h2>${escapeHTML(song.title)}</h2>
 
-      <a class="artist artist-link" href="artist.html?artist=${encodeURIComponent(song.artist)}">
-        ${song.artist}
+      <a class="artist artist-link" href="artist.html?artist=${encodeURIComponent(song.artist || "")}">
+        ${escapeHTML(song.artist)}
       </a>
 
-      <p class="description">${song.description}</p>
-      <p class="posted-date">Posted: ${song.posted}</p>
+      <p class="description">${escapeHTML(song.description)}</p>
+      <p class="posted-date">Posted: ${escapeHTML(song.posted)}</p>
 
-      <audio id="track-audio" src="${song.file}" preload="metadata"></audio>
+      <audio id="track-audio" src="${escapeHTML(song.file)}" preload="metadata"></audio>
       <div id="track-waveform" class="waveform"></div>
 
       <div class="time-row">
@@ -325,10 +339,10 @@ async function loadComments() {
 
       commentCard.innerHTML = `
         <div class="comment-header">
-          <strong>${comment.name || "User"}</strong>
+          <strong>${escapeHTML(comment.name || "User")}</strong>
           ${canDelete ? `<button class="delete-comment-btn" data-comment-id="${commentId}">Delete</button>` : ""}
         </div>
-        <p>${comment.text}</p>
+        <p>${escapeHTML(comment.text)}</p>
       `;
 
       commentsList.appendChild(commentCard);
@@ -360,4 +374,4 @@ async function deleteComment(commentId) {
   }
 }
 
-renderTrack();
+loadSong();
