@@ -244,12 +244,10 @@ async function loadSubmissions() {
             ${submission.contact}
           </p>
 
-          <p>
-            <strong>MP3:</strong>
-            <a class="artist-link" href="${submission.mp3Link}" target="_blank">
-              Open Link
-            </a>
-          </p>
+         <p>
+  <strong>MP3:</strong><br>
+  ${submission.mp3Link}
+</p>
 
           <p>
             <strong>Artwork:</strong>
