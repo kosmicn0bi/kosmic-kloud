@@ -36,6 +36,7 @@ const loginBtn = document.getElementById("login-btn");
 const addTrackBtn = document.getElementById("add-track-btn");
 const statusText = document.getElementById("admin-status");
 const adminTrackList = document.getElementById("admin-track-list");
+const adminSubmissionsList = document.getElementById("admin-submissions-list");
 
 const postedInput = document.getElementById("song-posted");
 postedInput.valueAsDate = new Date();
