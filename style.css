@@ -115,6 +115,10 @@ body::after {
     drop-shadow(0 0 18px rgba(255,255,255,0.06));
 }
 
+.hidden-title {
+  display: none;
+}
+
 .hero .tagline {
   max-width: 520px;
 
