@@ -24,7 +24,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // Change this password after testing.
-const ADMIN_PASSWORD = "NOBiNOiZE25";
+const ADMIN_PASSWORD = "NOBiNOiZE25@";
 
 const loginBox = document.getElementById("admin-login");
 const adminPanel = document.getElementById("admin-panel");
