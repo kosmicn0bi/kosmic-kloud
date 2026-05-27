@@ -193,3 +193,152 @@ if (localStorage.getItem("phase_sector_admin_unlocked") === "true") {
   adminPanel.classList.remove("hidden-admin");
   loadAdminTracks();
 }
+async function loadSubmissions() {
+  if (!adminSubmissionsList) return;
+
+  adminSubmissionsList.innerHTML = "<p>Loading submissions...</p>";
+
+  try {
+    const submissionsRef = collection(db, "submissions");
+    const submissionsQuery = query(
+      submissionsRef,
+      orderBy("submittedAt", "desc")
+    );
+
+    const snapshot = await getDocs(submissionsQuery);
+
+    if (snapshot.empty) {
+      adminSubmissionsList.innerHTML =
+        "<p>No music submissions yet.</p>";
+      return;
+    }
+
+    adminSubmissionsList.innerHTML = "";
+
+    snapshot.forEach((docSnap) => {
+      const submission = docSnap.data();
+      const submissionId = docSnap.id;
+
+      const card = document.createElement("div");
+      card.className = "submission-card";
+
+      card.innerHTML = `
+        <div class="submission-header">
+          <div>
+            <h4>${submission.artist} — ${submission.title}</h4>
+            <p>${submission.genre}</p>
+          </div>
+
+          <button
+            class="delete-submission-btn"
+            data-id="${submissionId}"
+          >
+            Delete
+          </button>
+        </div>
+
+        <div class="submission-body">
+
+          <p>
+            <strong>Contact:</strong>
+            ${submission.contact}
+          </p>
+
+          <p>
+            <strong>MP3:</strong>
+            <a class="artist-link" href="${submission.mp3Link}" target="_blank">
+              Open Link
+            </a>
+          </p>
+
+          <p>
+            <strong>Artwork:</strong>
+            <a class="artist-link" href="${submission.artworkLink}" target="_blank">
+              Open Link
+            </a>
+          </p>
+
+          ${
+            submission.soundcloud
+              ? `
+            <p>
+              <strong>SoundCloud:</strong>
+              <a class="artist-link" href="${submission.soundcloud}" target="_blank">
+                Open
+              </a>
+            </p>
+          `
+              : ""
+          }
+
+          ${
+            submission.spotify
+              ? `
+            <p>
+              <strong>Spotify:</strong>
+              <a class="artist-link" href="${submission.spotify}" target="_blank">
+                Open
+              </a>
+            </p>
+          `
+              : ""
+          }
+
+          ${
+            submission.social
+              ? `
+            <p>
+              <strong>Social:</strong>
+              <a class="artist-link" href="${submission.social}" target="_blank">
+                Open
+              </a>
+            </p>
+          `
+              : ""
+          }
+
+          ${
+            submission.notes
+              ? `
+            <p>
+              <strong>Notes:</strong><br>
+              ${submission.notes}
+            </p>
+          `
+              : ""
+          }
+
+        </div>
+      `;
+
+      adminSubmissionsList.appendChild(card);
+    });
+
+    document
+      .querySelectorAll(".delete-submission-btn")
+      .forEach((button) => {
+        button.addEventListener("click", async () => {
+          const submissionId = button.getAttribute("data-id");
+
+          const confirmDelete = confirm(
+            "Delete this submission?"
+          );
+
+          if (!confirmDelete) return;
+
+          await deleteDoc(doc(db, "submissions", submissionId));
+
+          alert("Submission deleted.");
+
+          await loadSubmissions();
+        });
+      });
+  } catch (error) {
+    console.error("Load submissions failed:", error);
+
+    adminSubmissionsList.innerHTML =
+      "<p>Submissions could not load.</p>";
+  }
+}
+
+loadSubmissions();
