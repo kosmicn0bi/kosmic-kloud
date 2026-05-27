@@ -250,21 +250,17 @@ async function loadSubmissions() {
 </p>
 
           <p>
-            <strong>Artwork:</strong>
-            <a class="artist-link" href="${submission.artworkLink}" target="_blank">
-              Open Link
-            </a>
-          </p>
+  <strong>Artwork:</strong><br>
+  ${submission.artworkLink}
+</p>
 
           ${
             submission.soundcloud
               ? `
             <p>
-              <strong>SoundCloud:</strong>
-              <a class="artist-link" href="${submission.soundcloud}" target="_blank">
-                Open
-              </a>
-            </p>
+  <strong>SoundCloud:</strong><br>
+  ${submission.soundcloud}
+</p>
           `
               : ""
           }
@@ -273,11 +269,9 @@ async function loadSubmissions() {
             submission.spotify
               ? `
             <p>
-              <strong>Spotify:</strong>
-              <a class="artist-link" href="${submission.spotify}" target="_blank">
-                Open
-              </a>
-            </p>
+  <strong>Spotify:</strong><br>
+  ${submission.spotify}
+</p>
           `
               : ""
           }
@@ -285,12 +279,10 @@ async function loadSubmissions() {
           ${
             submission.social
               ? `
-            <p>
-              <strong>Social:</strong>
-              <a class="artist-link" href="${submission.social}" target="_blank">
-                Open
-              </a>
-            </p>
+           <p>
+  <strong>Social:</strong><br>
+  ${submission.social}
+</p>
           `
               : ""
           }
