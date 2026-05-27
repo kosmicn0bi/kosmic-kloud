@@ -743,3 +743,92 @@ footer {
 
   box-shadow: 0 0 18px rgba(255,80,80,0.15);
 }
+/* SUBMISSIONS */
+
+.submission-card {
+  padding: 16px;
+  margin-bottom: 14px;
+
+  border-radius: 18px;
+
+  background: rgba(255,255,255,0.03);
+
+  border: 1px solid rgba(255,255,255,0.06);
+
+  box-shadow:
+    0 8px 30px rgba(0,0,0,0.35);
+}
+
+.submission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+
+  margin-bottom: 14px;
+}
+
+.submission-header h4 {
+  margin: 0 0 4px;
+
+  font-size: 18px;
+}
+
+.submission-header p {
+  margin: 0;
+
+  font-size: 12px;
+
+  color: #9ea5ad;
+}
+
+.submission-body p {
+  margin: 0 0 12px;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.delete-submission-btn {
+  flex: unset;
+
+  padding: 8px 14px;
+
+  border-color: rgba(255,80,80,0.25);
+
+  color: #ffffff;
+}
+
+.delete-submission-btn:hover {
+  border-color: rgba(255,80,80,0.55);
+
+  box-shadow:
+    0 0 18px rgba(255,80,80,0.15);
+}
+
+.requirements-list {
+  margin: 0;
+  padding-left: 18px;
+
+  color: #c6ccd2;
+
+  line-height: 1.8;
+
+  font-size: 13px;
+}
+
+.agreement-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin: 18px 0;
+
+  font-size: 13px;
+
+  color: #aeb5bc;
+}
+
+.agreement-check input {
+  width: auto;
+}
