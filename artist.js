@@ -48,7 +48,25 @@ function renderArtistPage() {
 
   artistTitle.innerText = artistName;
   artistSubtitle.innerText = `Tracks uploaded to Phase Sector`;
+  const artistData = artistSongs[0];
 
+  document.getElementById("artist-count").innerHTML = `
+  <div class="artist-socials">
+
+    <a href="${artistData.instagram}" target="_blank" class="social-btn">
+      Instagram
+    </a>
+
+    <a href="${artistData.soundcloud}" target="_blank" class="social-btn">
+      SoundCloud
+    </a>
+
+    <a href="${artistData.youtube}" target="_blank" class="social-btn">
+      YouTube
+    </a>
+
+  </div>
+`;
   artistSongList.innerHTML = "";
 
   if (artistSongs.length === 0) {
