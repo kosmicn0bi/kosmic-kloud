@@ -572,3 +572,21 @@ footer {
   justify-content: space-between;
   align-items: center;
 }
+.artist-link {
+  display: inline-block;
+
+  text-decoration: none;
+
+  color: #6fffe2;
+
+  transition: 0.2s ease;
+}
+
+.artist-link:hover {
+  color: #ffffff;
+
+  text-decoration: underline;
+
+  text-shadow:
+    0 0 10px rgba(0,255,200,0.25);
+}
