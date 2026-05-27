@@ -3,15 +3,22 @@ const songs = [
     id: "song1",
     title: "Stepbro Chill",
     artist: "Kosmic Noize",
+    instagram: "https://instagram.com/kosmicnoize",
+    soundcloud: "https://soundcloud.com/",
+    youtube: "https://youtube.com/",
     file: "songs/song1.mp3",
     cover: "covers/cover1.jpg",
     description: "What the hell is even that?!",
     posted: "2026-05-24"
   },
+
   {
     id: "song2",
     title: "ARC",
     artist: "Kosmic Noize",
+    instagram: "https://instagram.com/kosmicnoize",
+    soundcloud: "https://soundcloud.com/",
+    youtube: "https://youtube.com/",
     file: "songs/ARC.mp3",
     cover: "covers/Arcart.JPG",
     description: "Hey — Dont Shoot!",
