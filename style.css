@@ -702,3 +702,44 @@ footer {
 
   opacity: 0.9;
 }
+/* ADMIN TRACK DELETE */
+
+.admin-track-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+
+  padding: 12px;
+  margin-bottom: 10px;
+
+  border-radius: 14px;
+
+  background: rgba(255,255,255,0.03);
+
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.admin-track-item p {
+  margin: 4px 0 0;
+
+  font-size: 12px;
+
+  color: #9ea5ad;
+}
+
+.delete-track-btn {
+  flex: unset;
+
+  padding: 8px 14px;
+
+  border-color: rgba(255,80,80,0.25);
+
+  color: #ffffff;
+}
+
+.delete-track-btn:hover {
+  border-color: rgba(255,80,80,0.55);
+
+  box-shadow: 0 0 18px rgba(255,80,80,0.15);
+}
