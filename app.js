@@ -37,7 +37,9 @@ function renderSongs() {
 
       <div class="song-content">
         <h3 class="song-title">${song.title}</h3>
-        <p class="artist">${song.artist}</p>
+        <a class="artist artist-link" href="artist.html?artist=${encodeURIComponent(song.artist)}">
+  ${song.artist}
+</a>
         <p class="description">${song.description || ""}</p>
         <p class="posted-date">Posted: ${song.posted}</p>
 
