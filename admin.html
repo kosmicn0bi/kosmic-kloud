@@ -31,74 +31,141 @@
 
     <section id="admin-login" class="admin-card">
       <h3>Owner Login</h3>
-      <p class="description">Enter your admin password to unlock the upload form.</p>
 
-      <input id="admin-password" type="password" placeholder="Admin password" />
+      <p class="description">
+        Enter your admin password to unlock the upload form.
+      </p>
+
+      <input
+        id="admin-password"
+        type="password"
+        placeholder="Admin password"
+      />
+
       <button id="login-btn">Unlock Admin</button>
     </section>
 
     <section id="admin-panel" class="admin-card hidden-admin">
+
       <h3>Add New Track</h3>
 
       <div class="admin-grid">
+
         <label>
           Song Title
-          <input id="song-title" type="text" placeholder="ARC" />
+          <input
+            id="song-title"
+            type="text"
+            placeholder="ARC"
+          />
         </label>
 
         <label>
           Artist Name
-          <input id="artist-name-input" type="text" placeholder="Kosmic Noize" />
+          <input
+            id="artist-name-input"
+            type="text"
+            placeholder="Kosmic Noize"
+          />
         </label>
 
         <label>
           MP3 Path
-          <input id="song-file" type="text" placeholder="songs/track-name.mp3" />
+          <input
+            id="song-file"
+            type="text"
+            placeholder="songs/track-name.mp3"
+          />
         </label>
 
         <label>
           Cover Path
-          <input id="song-cover" type="text" placeholder="covers/artwork.jpg" />
+          <input
+            id="song-cover"
+            type="text"
+            placeholder="covers/artwork.jpg"
+          />
         </label>
 
         <label>
           Posted Date
-          <input id="song-posted" type="date" />
+          <input
+            id="song-posted"
+            type="date"
+          />
         </label>
 
         <label>
           Description
-          <textarea id="song-description" placeholder="Track description..."></textarea>
+          <textarea
+            id="song-description"
+            placeholder="Track description..."
+          ></textarea>
         </label>
+
       </div>
 
       <h3>Artist Social Links</h3>
 
       <div class="admin-grid">
+
         <label>
           SoundCloud
-          <input id="artist-soundcloud" type="url" placeholder="https://soundcloud.com/artist" />
+          <input
+            id="artist-soundcloud"
+            type="url"
+            placeholder="https://soundcloud.com/artist"
+          />
         </label>
 
         <label>
           Spotify
-          <input id="artist-spotify" type="url" placeholder="https://open.spotify.com/artist/..." />
+          <input
+            id="artist-spotify"
+            type="url"
+            placeholder="https://open.spotify.com/artist/..."
+          />
         </label>
 
         <label>
           Apple Music
-          <input id="artist-applemusic" type="url" placeholder="https://music.apple.com/..." />
+          <input
+            id="artist-applemusic"
+            type="url"
+            placeholder="https://music.apple.com/..."
+          />
         </label>
 
         <label>
           YouTube
-          <input id="artist-youtube" type="url" placeholder="https://youtube.com/@artist" />
+          <input
+            id="artist-youtube"
+            type="url"
+            placeholder="https://youtube.com/@artist"
+          />
         </label>
+
       </div>
 
-      <button id="add-track-btn">Add Track</button>
+      <button id="add-track-btn">
+        Add Track
+      </button>
+
       <p id="admin-status" class="description"></p>
+
+      <hr style="margin: 30px 0; opacity: 0.1;">
+
+      <h3>Delete Tracks</h3>
+
+      <p class="description">
+        This removes the track from Phase Sector,
+        but does not delete the MP3 or artwork from GitHub.
+      </p>
+
+      <div id="admin-track-list"></div>
+
     </section>
+
   </main>
 
   <footer>
