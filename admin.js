@@ -20,7 +20,7 @@ const db = getFirestore(app);
 
 // Change this password before uploading.
 // This is simple protection only. For stronger protection, use Firebase Auth later.
-const ADMIN_PASSWORD = "change-this-password";
+const ADMIN_PASSWORD = "NOBiNOiZE25";
 
 const loginBox = document.getElementById("admin-login");
 const adminPanel = document.getElementById("admin-panel");
