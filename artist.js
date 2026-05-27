@@ -1,14 +1,17 @@
+const artists = {
+  "Kosmic Noize": {
+    soundcloud: "https://soundcloud.com/kosmicnoize",
+    spotify: "https://open.spotify.com/artist/0mmSncpawq94IaBJSdBcNB",
+    applemusic: "https://music.apple.com/us/artist/kosmic-noize/1625134522",
+    youtube: "https://www.youtube.com/channel/UCbYsYcVcI6n596R0G_altuw"
+  }
+};
+
 const songs = [
   {
     id: "song1",
     title: "Stepbro Chill",
     artist: "Kosmic Noize",
-
-    soundcloud: "https://soundcloud.com/",
-    spotify: "https://spotify.com/",
-    applemusic: "https://music.apple.com/",
-    youtube: "https://youtube.com/",
-
     file: "songs/song1.mp3",
     cover: "covers/cover1.jpg",
     description: "What the hell is even that?!",
@@ -19,12 +22,6 @@ const songs = [
     id: "song2",
     title: "ARC",
     artist: "Kosmic Noize",
-
-    soundcloud: "https://soundcloud.com/",
-    spotify: "https://spotify.com/",
-    applemusic: "https://music.apple.com/",
-    youtube: "https://youtube.com/",
-
     file: "songs/ARC.mp3",
     cover: "covers/Arcart.JPG",
     description: "Hey — Dont Shoot!",
@@ -63,7 +60,7 @@ function renderArtistPage() {
     return;
   }
 
-  const artistData = artistSongs[0];
+  const artistData = artists[artistName];
 
   artistCount.innerHTML = `
     <div class="artist-socials">
