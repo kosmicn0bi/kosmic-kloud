@@ -225,7 +225,10 @@ async function loadSubmissions() {
       card.innerHTML = `
         <div class="submission-header">
           <div>
-            <h4>${submission.artist} — ${submission.title}</h4>
+            <h4>
+  Artist: ${submission.artist}<br>
+  Track: ${submission.title}
+</h4>
             <p>${submission.genre}</p>
           </div>
 
