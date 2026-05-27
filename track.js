@@ -131,7 +131,11 @@ function renderTrack() {
 
     <div class="track-info">
       <h2>${song.title}</h2>
-      <p class="artist">${song.artist}</p>
+
+      <a class="artist artist-link" href="artist.html?artist=${encodeURIComponent(song.artist)}">
+        ${song.artist}
+      </a>
+
       <p class="description">${song.description}</p>
       <p class="posted-date">Posted: ${song.posted}</p>
 
