@@ -50,8 +50,27 @@ function renderArtistPage() {
   artistSubtitle.innerText = `Tracks uploaded to Phase Sector`;
   const artistData = artistSongs[0];
 
-  document.getElementById("artist-count").innerHTML = `
+document.getElementById("artist-count").innerHTML = `
   <div class="artist-socials">
+
+    <a href="${artistData.soundcloud}" target="_blank" class="social-icon">
+      <img src="/assets/icons/soundcloud.svg" alt="SoundCloud">
+    </a>
+
+    <a href="${artistData.spotify}" target="_blank" class="social-icon">
+      <img src="/assets/icons/spotify.svg" alt="Spotify">
+    </a>
+
+    <a href="${artistData.applemusic}" target="_blank" class="social-icon">
+      <img src="/assets/icons/applemusic.svg" alt="Apple Music">
+    </a>
+
+    <a href="${artistData.youtube}" target="_blank" class="social-icon">
+      <img src="/assets/icons/youtube.svg" alt="YouTube">
+    </a>
+
+  </div>
+`;
 
     <a href="${artistData.instagram}" target="_blank" class="social-btn">
       Instagram
