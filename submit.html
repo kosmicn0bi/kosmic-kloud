@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Submit Your Music | Phase Sector</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="hero">
+    <div>
+      <img
+        src="assets/phase-sector-logo.png"
+        alt="Phase Sector"
+        class="hero-logo"
+      />
+
+      <h1 class="hidden-title">Submit Your Music</h1>
+
+      <p class="tagline">
+        Send your track for review. If approved, it may be uploaded to Phase Sector.
+      </p>
+    </div>
+  </header>
+
+  <main>
+    <a class="back-link" href="index.html">← Back to Latest Drops</a>
+
+    <section class="section-header">
+      <h2>Submit Your Music</h2>
+      <p>
+        Fill this out with your track info and download links.
+      </p>
+    </section>
+
+    <section class="admin-card">
+      <h3>Submission Requirements</h3>
+
+      <ul class="requirements-list">
+        <li>MP3 only</li>
+        <li>Artwork required</li>
+        <li>Dropbox or Google Drive link must be accessible</li>
+        <li>No expired or private links</li>
+        <li>Include your artist socials if available</li>
+        <li>You must own the track or have permission to submit it</li>
+      </ul>
+    </section>
+
+    <section class="admin-card">
+      <h3>Music Submission Form</h3>
+
+      <div class="admin-grid">
+        <label>
+          Artist Name
+          <input id="submit-artist" type="text" placeholder="Artist name" />
+        </label>
+
+        <label>
+          Email / Contact
+          <input id="submit-contact" type="text" placeholder="Email or Instagram" />
+        </label>
+
+        <label>
+          Track Title
+          <input id="submit-title" type="text" placeholder="Track title" />
+        </label>
+
+        <label>
+          Genre
+          <input id="submit-genre" type="text" placeholder="Dubstep, House, Techno..." />
+        </label>
+
+        <label>
+          MP3 Download Link
+          <input id="submit-mp3" type="url" placeholder="Google Drive or Dropbox link" />
+        </label>
+
+        <label>
+          Artwork Download Link
+          <input id="submit-artwork" type="url" placeholder="Google Drive or Dropbox link" />
+        </label>
+
+        <label>
+          SoundCloud
+          <input id="submit-soundcloud" type="url" placeholder="https://soundcloud.com/artist" />
+        </label>
+
+        <label>
+          Spotify
+          <input id="submit-spotify" type="url" placeholder="https://open.spotify.com/artist/..." />
+        </label>
+
+        <label>
+          Instagram / Other Social
+          <input id="submit-social" type="url" placeholder="https://instagram.com/artist" />
+        </label>
+
+        <label>
+          Notes
+          <textarea id="submit-notes" placeholder="Anything you want us to know..."></textarea>
+        </label>
+      </div>
+
+      <label class="agreement-check">
+        <input id="submit-agree" type="checkbox" />
+        I confirm I own this music or have permission to submit it.
+      </label>
+
+      <button id="submit-music-btn">Submit Music</button>
+
+      <p id="submit-status" class="description"></p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© Phase Sector — music submissions</p>
+  </footer>
+
+  <script type="module" src="submit.js"></script>
+
+</body>
+</html>
