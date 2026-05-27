@@ -845,12 +845,11 @@ footer {
 
   border-radius: 999px;
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(124,60,255,0.95),
-      rgba(0,217,255,0.75)
-    );
+  background: rgba(255,255,255,0.04);
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  backdrop-filter: blur(10px);
 
   color: #ffffff;
   text-decoration: none;
@@ -863,12 +862,13 @@ footer {
   transition: 0.2s ease;
 
   box-shadow:
-    0 0 22px rgba(124,60,255,0.18);
+    0 8px 30px rgba(0,0,0,0.28);
 }
 
 .hero-button:hover {
   transform: translateY(-2px);
 
-  box-shadow:
-    0 0 32px rgba(124,60,255,0.28);
+  border-color: rgba(255,255,255,0.16);
+
+  background: rgba(255,255,255,0.06);
 }
