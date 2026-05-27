@@ -118,3 +118,62 @@ if (localStorage.getItem("phase_sector_admin_unlocked") === "true") {
   loginBox.classList.add("hidden-admin");
   adminPanel.classList.remove("hidden-admin");
 }
+const adminTrackList = document.getElementById("admin-track-list");
+
+async function loadAdminTracks() {
+  if (!adminTrackList) return;
+
+  adminTrackList.innerHTML = "<p>Loading tracks...</p>";
+
+  const songsRef = collection(db, "songs");
+  const songsQuery = query(songsRef, orderBy("posted", "desc"));
+  const snapshot = await getDocs(songsQuery);
+
+  if (snapshot.empty) {
+    adminTrackList.innerHTML = "<p>No tracks found.</p>";
+    return;
+  }
+
+  adminTrackList.innerHTML = "";
+
+  snapshot.forEach((docSnap) => {
+    const song = docSnap.data();
+    const songId = docSnap.id;
+
+    const item = document.createElement("div");
+    item.className = "admin-track-item";
+
+    item.innerHTML = `
+      <div>
+        <strong>${song.title}</strong>
+        <p>${song.artist}</p>
+      </div>
+
+      <button class="delete-track-btn" data-id="${songId}">
+        Delete
+      </button>
+    `;
+
+    adminTrackList.appendChild(item);
+  });
+
+  document.querySelectorAll(".delete-track-btn").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const songId = button.getAttribute("data-id");
+
+      const confirmDelete = confirm(
+        "Delete this track from Phase Sector?"
+      );
+
+      if (!confirmDelete) return;
+
+      await deleteDoc(doc(db, "songs", songId));
+
+      alert("Track deleted.");
+
+      loadAdminTracks();
+    });
+  });
+}
+
+loadAdminTracks();
