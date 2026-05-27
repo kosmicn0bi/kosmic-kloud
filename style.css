@@ -832,3 +832,43 @@ footer {
 .agreement-check input {
   width: auto;
 }
+.hero-actions {
+  margin-top: 18px;
+}
+
+.hero-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 12px 20px;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(124,60,255,0.95),
+      rgba(0,217,255,0.75)
+    );
+
+  color: #ffffff;
+  text-decoration: none;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  letter-spacing: 0.4px;
+
+  transition: 0.2s ease;
+
+  box-shadow:
+    0 0 22px rgba(124,60,255,0.18);
+}
+
+.hero-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 0 32px rgba(124,60,255,0.28);
+}
